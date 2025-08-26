@@ -1,0 +1,3718 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>舆情动态数据大屏</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <!-- Bootstrap 4 CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: url('mjdataimages/mjbg.png') no-repeat center center fixed;
+      background-size: cover;
+      min-height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+    }
+    .dashboard-container {
+      width: 100vw;
+      height: 100vh;
+      max-width: 100vw;
+      max-height: 100vh;
+      aspect-ratio: 16/9;
+      padding: 20px 20px 20px 20px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+    }
+    .dashboard-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #fff;
+      font-weight: bold;
+      margin-bottom: 10px;
+      position: relative;
+    }
+    .dashboard-title {
+      font-size: 2.5rem;
+      text-align: center;
+      flex: none;
+      letter-spacing: 2px;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      white-space: nowrap;
+      z-index: 1;
+      pointer-events: none;
+      width: auto;
+      min-width: 0;
+      color: #fff;
+      text-shadow: 
+        0 0 8px rgba(255, 217, 0, 0.6),
+        0 0 16px rgba(255, 217, 0, 0.4),
+        0 0 24px rgba(255, 217, 0, 0.3);
+      animation: titleGlow 4s ease-in-out infinite;
+    }
+    
+    @keyframes titleGlow {
+      0%, 100% {
+        text-shadow: 
+          0 0 8px rgba(255, 217, 0, 0.6),
+          0 0 16px rgba(255, 217, 0, 0.4),
+          0 0 24px rgba(255, 217, 0, 0.3);
+      }
+      50% {
+        text-shadow: 
+          0 0 12px rgba(255, 217, 0, 0.8),
+          0 0 20px rgba(255, 217, 0, 0.6),
+          0 0 28px rgba(255, 217, 0, 0.4);
+      }
+    }
+    .dashboard-logo {
+      /* width: 120px; */
+      text-align: right;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+    }
+    
+    /* 时间显示样式 */
+    .time-display {
+      animation: timePulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes timePulse {
+      0%, 100% {
+        box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+      }
+      50% {
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+      }
+    }
+    .dashboard-top-row {
+      display: flex;
+      margin-bottom: 10px;
+    }
+    .dashboard-top-card {
+      background: rgba(255,255,255,0.15);
+      border-radius: 12px;
+      margin-right: 10px;
+      padding: 10px 20px;
+      color: #fff;
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .dashboard-top-card:last-child {
+      margin-right: 0;
+    }
+    .dashboard-main {
+      flex: 1;
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      min-height: 0;
+    }
+    .dashboard-left,
+    .dashboard-center,
+    .dashboard-right {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 0;
+    }
+    .dashboard-left {
+      flex: 1.1;
+      min-width: 0;
+    }
+    .dashboard-center {
+      flex: 3;
+      min-width: 0;
+    }
+    .dashboard-right {
+      flex: 1;
+      min-width: 0;
+    }
+    .dashboard-block {
+      background: rgba(255,255,255,0.9);
+      border-radius: 12px;
+      padding: 12px 16px;
+      min-height: 0;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    .dashboard-block-title {
+      font-weight: bold;
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+      color: #222;
+    }
+    .dashboard-bottom-row {
+      display: flex;
+      gap: 10px;
+      min-height: 0;
+    }
+    .dashboard-bottom-block {
+      background: rgba(255,255,255,0.9);
+      border-radius: 12px;
+      padding: 12px 16px;
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    @media (max-width: 1200px) {
+      .dashboard-title { font-size: 1.5rem; }
+      /* .dashboard-logo { width: 80px; } */
+      .dashboard-logo { height: 36px; }
+    }
+    @media (max-width: 900px) {
+      .dashboard-container { padding: 5px; }
+      .dashboard-title { font-size: 1.1rem; }
+      /* .dashboard-logo { width: 60px; } */
+      .dashboard-logo { height: 28px; }
+    }
+    
+    /* 时间轴样式 */
+    .timeline-event {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-width: 120px;
+      max-width: 150px;
+      width: calc(100% / 9);
+      height: 100%;
+      padding: 0 8px;
+      position: relative;
+      transition: all 0.3s ease;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      margin: 0 2px;
+      border: 1px solid #eee;
+      flex-shrink: 0;
+    }
+    
+    .timeline-date {
+      font-size: 10px;
+      color: #777;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    
+    .timeline-media {
+      font-size: 8px;
+      color: #999;
+      margin-top: 1px;
+      text-align: center;
+      max-width: 100%;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.1;
+    }
+    
+    .timeline-content {
+      font-size: 9px;
+      color: #555;
+      margin-top: 2px;
+      text-align: center;
+      max-width: 100%;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.2;
+    }
+    
+    .timeline-event-type {
+      position: absolute;
+      top: -8px;
+      right: 10px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid white;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    
+    .timeline-event.active {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(255,107,53,0.3);
+      border-color: #FF9E1B;
+    }
+    
+    .timeline-event.active .timeline-date {
+      font-size: 12px;
+      font-weight: bold;
+      color: #FF6F00;
+    }
+    
+    .timeline-event.active .timeline-media {
+      font-size: 9px;
+      color: #FF6F00;
+      font-weight: 500;
+    }
+    
+    .timeline-event.active .timeline-content {
+      font-size: 11px;
+      color: #1A5276;
+      font-weight: 600;
+    }
+    
+    .timeline-event.media .timeline-event-type {
+      background: #17A2B8;
+    }
+    
+    .timeline-event.social .timeline-event-type {
+      background: #28A745;
+    }
+    
+    .timeline-event.official .timeline-event-type {
+      background: #FF6F00;
+    }
+    
+    .timeline-event.key-event .timeline-event-type {
+      background: #FFC107;
+    }
+    
+    @keyframes scrollTimeline {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    
+    /* 新增主要信息模块样式 */
+    .new-info-container {
+      height: calc(100% - 40px);
+      overflow: hidden;
+      padding: 0px 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    
+    .new-info-card {
+      display: flex;
+      align-items: center;
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 5px;
+      margin-bottom: 8px;
+      box-shadow: 0 0 4px 0 rgba(246, 171, 0, 0.36);
+      border: 1px solid rgba(246, 171, 0, 0.30);
+      transition: all 0.3s ease;
+      flex: 1;
+      min-height: 0;
+    }
+    
+    .new-info-card:last-child {
+      margin-bottom: 0;
+    }
+    
+    .new-info-card:hover {
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+      transform: translateY(-2px);
+    }
+    
+    .new-info-number {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #F6AB00;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+      margin-right: 12px;
+      flex-shrink: 0;
+    }
+    
+    .new-info-content {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      line-height: normal;
+    }
+    
+    .new-info-title {
+      font-size: 13px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 4px;
+      line-height: 1.3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+    }
+    
+    .new-info-text {
+      font-size: 11px;
+      color: #666;
+      line-height: 1.4;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+    }
+    
+    /* 弹出框样式 */
+    .popup-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(246, 171, 0, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      border-radius: 12px;
+    }
+    
+    .popup-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .popup-overlay.hiding {
+      opacity: 0;
+      visibility: hidden;
+    }
+    
+    /* 动态发光效果动画 */
+    @keyframes glow {
+      0% {
+        box-shadow: 0 0 8px rgba(255, 255, 224, 0.8),
+                    0 0 16px rgba(255, 255, 224, 0.6),
+                    0 0 24px rgba(255, 255, 224, 0.4);
+      }
+      50% {
+        box-shadow: 0 0 20px rgba(255, 255, 224, 0.95),
+                    0 0 32px rgba(255, 255, 224, 0.8),
+                    0 0 40px rgba(255, 255, 224, 0.6);
+      }
+      100% {
+        box-shadow: 0 0 8px rgba(255, 255, 224, 0.8),
+                    0 0 16px rgba(255, 255, 224, 0.6),
+                    0 0 24px rgba(255, 255, 224, 0.4);
+      }
+    }
+    
+    .popup-card {
+      background: #F6AB00;
+      border-radius: 12px;
+      padding: 16px;
+      max-width: 90%;
+      max-height: 80%;
+      overflow: hidden;
+      transform: scale(0.8);
+      transition: all 0.3s ease;
+      position: relative;
+      animation: glow 2s ease-in-out infinite;
+    }
+    
+    .popup-overlay.show .popup-card {
+      transform: scale(1);
+    }
+    
+    .popup-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: white;
+      margin-bottom: 10px;
+      line-height: 1.2;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+    
+    .popup-content {
+      font-size: 14px;
+      color: white;
+      line-height: 1.4;
+      margin-bottom: 10px;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+    
+    .popup-mentions {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.8);
+      font-style: italic;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+    
+    .popup-new-badge {
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      background: #FF4800;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+      padding: 6px 8px;
+      border-radius: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      z-index: 10;
+      display: none;
+      min-width: 20px;
+      text-align: center;
+      line-height: 1;
+    }
+    
+    /* 滚动条样式 */
+    .new-info-container::-webkit-scrollbar {
+      width: 4px;
+    }
+    
+    .new-info-container::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    .new-info-container::-webkit-scrollbar-thumb {
+      background: rgba(246, 171, 0, 0.3);
+      border-radius: 2px;
+    }
+    
+    .new-info-container::-webkit-scrollbar-thumb:hover {
+      background: rgba(246, 171, 0, 0.5);
+    }
+    
+    /* 舆论观点模块样式 */
+    .opinion-tabs {
+      display: flex;
+      background: #ffffff;
+      border-radius: 8px;
+      margin: 0px;
+      margin-top: 0px;
+      overflow: hidden;
+    }
+    
+    .tab-btn {
+      flex: 1;
+      text-align: center;
+      padding: 4px 0;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+      color: #666;
+      transition: all 0.3s;
+      position: relative;
+    }
+    
+    .tab-btn.active {
+      color: #fff;
+      background: #F6AB00;
+    }
+    
+    .tab-btn:hover {
+      background: rgba(246, 171, 0, 0.1);
+    }
+    
+    .opinion-sections {
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .opinion-section {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.5s ease-in-out;
+      padding: 8px 0;
+      box-sizing: border-box;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .opinion-section.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .opinion-header {
+      padding: 8px 12px;
+      background: #FFF3E0;
+      border-left: 4px solid #F6AB00;
+      font-weight: bold;
+      margin-bottom: 12px;
+      border-radius: 0 4px 4px 0;
+      color: #333;
+      font-size: 13px;
+      line-height: 1.3;
+    }
+    
+    .opinion-list {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      min-height: 0;
+    }
+    
+    .scroll-content {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding-bottom: 20px; /* 添加底部内边距，确保最后一条内容完全显示 */
+    }
+    
+    /* 为每个分类单独设置动画 */
+    #media-section .scroll-content {
+      animation: scroll-up 60s linear forwards;
+    }
+    
+    #kol-section .scroll-content {
+      animation: scroll-up 60s linear forwards;
+    }
+    
+    #netizen-section .scroll-content {
+      animation: scroll-up 60s linear forwards;
+    }
+    
+    @keyframes scroll-up {
+      0% { transform: translateY(0); }
+      5% { transform: translateY(0); }
+      95% { transform: translateY(calc(-100% + 100%)); }
+      100% { transform: translateY(calc(-100% + 100%)); }
+    }
+    
+    /* 动态滚动动画类 */
+    .scroll-up-dynamic {
+      animation: scroll-up-dynamic 60s linear forwards;
+    }
+    
+    @keyframes scroll-up-dynamic {
+      0% { transform: translateY(0); }
+      5% { transform: translateY(0); }
+      95% { transform: translateY(var(--scroll-distance, calc(-100% + 100%))); }
+      100% { transform: translateY(var(--scroll-distance, calc(-100% + 100%))); }
+    }
+    
+    .opinion-item {
+      background: #FFF9F0;
+      border-left: 3px solid #F6AB00;
+      padding: 12px;
+      margin-bottom: 12px;
+      border-radius: 0 6px 6px 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    .opinion-title {
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #333;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      line-height: 1.3;
+    }
+    
+    .percent-number {
+      color: #F6AB00;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    
+    .percent-bar {
+      background: rgba(246, 171, 0, 0.2);
+      height: 10px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      position: relative;
+      overflow: visible;
+      width: calc(100% - 60px);
+    }
+    
+    .percent-fill {
+      height: 100%;
+      background: #F6AB00;
+      border-radius: 4px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      transition: width 1s ease;
+    }
+    
+    .percent-value {
+      position: absolute;
+      right: -50px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-weight: bold;
+      color: #F6AB00;
+      text-shadow: none;
+      z-index: 1;
+      font-size: 12px;
+    }
+    
+    .opinion-details {
+      font-size: 12px;
+      line-height: 1.5;
+      color: #555;
+    }
+    
+    .opinion-details p {
+      margin-bottom: 6px;
+      padding-left: 6px;
+      position: relative;
+    }
+    
+    .opinion-details p:before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 6px;
+      width: 3px;
+      height: 3px;
+      background: #F6AB00;
+      border-radius: 50%;
+    }
+    
+    /* 高热信息模块样式 */
+    :root{
+      --mj-orange:#F6AB00;
+      --mj-orange-deep:#FF7A00;
+      --mj-card:#ffffff;
+      --mj-shadow:0 6px 20px rgba(0,0,0,.06);
+    }
+    
+    .hot-wrap{
+      width:100%; 
+      background:linear-gradient(180deg,#FFF9F0 0%, #FFF3E1 100%);
+      border:1px solid #FFD8A8; 
+      border-radius:10px; 
+      padding:12px; 
+      position:relative;
+      height: 100%;
+    }
+    
+    .hot-head{
+      display:flex; 
+      align-items:center; 
+      justify-content:center; 
+      margin-bottom:8px;
+    }
+    
+    .hot-tabs .btn{
+      border:none; 
+      border-radius:8px; 
+      padding:4px 8px; 
+      font-weight:700; 
+      color:#9FA6B2; 
+      background:#E7EDF5;
+      font-size: 10px;
+      margin: 0 2px;
+    }
+    
+    .hot-tabs .btn.active{
+      background:var(--mj-orange); 
+      color:#fff; 
+      box-shadow:0 2px 6px rgba(246,171,0,.35);
+    }
+
+    .rank-card{
+      background:var(--mj-card); 
+      border-radius:10px; 
+      padding:8px; 
+      box-shadow:var(--mj-shadow); 
+      height: 100px; /* 设置固定高度为120px */
+      font-size: 10px;
+    }
+    
+    .rank-badge{
+      width:18px;
+      height:18px;
+      border-radius:50%;
+      background:var(--mj-orange);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:700;
+      margin-right:6px;
+      font-size: 11px;
+    }
+    
+    .src{
+      color:#111; 
+      font-weight:700;
+      font-size: 11px;
+    }
+    
+    .src small{
+      display:block; 
+      color:#555; 
+      font-weight:700;
+      font-size: 11px;
+    }
+    
+    .title{
+      color:#4A4A4A; 
+      font-size:10px; 
+      line-height:1.2; 
+      margin-top:4px; 
+      height:24px; 
+      overflow:hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      text-overflow: ellipsis;
+      word-break: break-word;
+    }
+    
+    .metric-row{
+      display:flex; 
+      flex-wrap:wrap; 
+      align-items:center; 
+      margin-top:2px; 
+      color:#222; 
+      font-weight:700;
+    }
+    
+    .metric{
+      display:flex; 
+      align-items:center; 
+      margin-right:8px; 
+      /*margin-top:3px;*/
+      font-size: 14px; /* 调整为与"高评论"分类中的big-num字号一致 */
+    }
+    
+    .metric i{
+      font-style:normal; 
+      display:inline-block; 
+      width:12px; 
+      height:12px; 
+      margin-right:4px;
+      background:#EDEFF3; 
+      border-radius:4px; 
+      position:relative;
+    }
+    
+    .metric .m-link::after{
+      content:""; /* 转发图标 */
+      position:absolute; 
+      left:1px; 
+      top:-1px; 
+      width: 14px;
+      height: 14px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24'%3E%3Cpath fill='%23999999' d='M11 9V5l7 7l-7 7v-4.1c-5 0-8.5 1.6-11 5.1c1-5 4-10 11-11m6-1V5l7 7l-7 7v-3l4-4z'/%3E%3C/svg%3E");
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+    
+    .metric .m-cmt::after{
+      content:""; /* 评论图标 */
+      position:absolute; 
+      left:1px; 
+      top:-1px; 
+      width: 14px;
+      height: 14px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24'%3E%3Cpath fill='%23999999' d='M9 22a1 1 0 0 1-1-1v-3H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6.1l-3.7 3.71c-.2.19-.45.29-.7.29zm8-11V9h-2v2zm-4 0V9h-2v2zm-4 0V9H7v2z'/%3E%3C/svg%3E");
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+    
+    .metric .m-like::after{
+      content:""; /* 点赞图标 */
+      position:absolute; 
+      left:1px; 
+      top:-1px; 
+      width: 14px;
+      height: 14px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24'%3E%3Cpath fill='%23999999' d='M21 8q.8 0 1.4.6T23 10v2q0 .175-.038.375t-.112.375l-3 7.05q-.225.5-.75.85T18 21h-8q-.825 0-1.412-.587T8 19V8.825q0-.4.163-.762t.437-.638l5.425-5.4q.375-.35.888-.425t.987.175t.688.7t.087.925L15.55 8zM4 21q-.825 0-1.412-.587T2 19v-9q0-.825.588-1.412T4 8t1.413.588T6 10v9q0 .825-.587 1.413T4 21'/%3E%3C/svg%3E");
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+
+    /* 高评论：右上角评论图标与大数字 */
+    .big-cmt{
+      position:absolute; 
+      right:8px; 
+      top:8px; 
+      color:#444;
+      font-size: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      text-align: right;
+    }
+    
+    .big-num{
+      font-weight:800; 
+      font-size:14px; 
+      letter-spacing:0.5px;
+    }
+    
+    /* 评论图标和数字的布局样式 */
+    .comment-icon {
+      margin-bottom: 2px;
+      display: flex;
+      justify-content: flex-end;
+    }
+    
+    .comment-number {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    /* 高扩散留白 */
+    .blank-canvas{
+      height: 100px; /* 设置固定高度为120px，与其他卡片保持一致 */
+      border-radius:10px; 
+      background:#fff; 
+      box-shadow:var(--mj-shadow);
+    }
+
+    /* 高粉丝：右侧"粉丝量" */
+    .fans-badge{
+      margin-left:auto; 
+      text-align:right;
+    }
+    
+    .fans-badge small{
+      color:#8F959E; 
+      display:block;
+      font-size: 7px;
+    }
+    
+    .fans-badge .n{
+      font-size:14px; 
+      font-weight:800; 
+      line-height:1;
+    }
+
+    /* —— 每行5个，不折行 —— */
+    .no-wrap{
+      flex-wrap:nowrap !important;
+    }
+    
+    .col-1-5{
+      flex:0 0 20%; 
+      max-width:20%;
+    }
+    
+    /* 栅格间距 */
+    .hot-grid > [class*="col-"]{
+      padding-left:4px; 
+      padding-right:4px;
+    }
+    
+    .hot-body{
+      margin-left:-4px; 
+      margin-right:-4px;
+      height: calc(100% - 30px);
+    }
+    
+    /* 标签页切换动画 */
+    .tab-pane {
+      transition: opacity 0.3s ease-in-out;
+      opacity: 1;
+    }
+    
+    .tab-pane:not(.show) {
+      opacity: 0;
+    }
+    
+    /* 确保标签页按钮样式正确 */
+    .hot-tabs .btn {
+      cursor: pointer;
+      user-select: none;
+    }
+    
+    .hot-tabs .btn:hover {
+      background: rgba(246, 171, 0, 0.1) !important;
+    }
+    
+    /* 高扩散关系图样式 */
+    #spread-relation-chart {
+      position: relative;
+      overflow: hidden;
+    }
+    
+    #spread-relation-chart svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+    
+    #spread-relation-chart .edge {
+      fill: none;
+      stroke: #D8D8D8;
+      stroke-width: 2;
+      opacity: 0.9;
+      stroke-linecap: round;
+    }
+    
+    #spread-relation-chart .node {
+      fill: #fff;
+      stroke-width: 2;
+    }
+    
+    #spread-relation-chart .label {
+      font-size: 11px;
+      fill: #111;
+      dominant-baseline: middle;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial;
+    }
+    
+    #spread-relation-chart .label-sub {
+      font-size: 11px;
+      fill: #666;
+      dominant-baseline: middle;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- 顶部栏 -->
+    <div class="dashboard-header">
+      <div>
+        <span class="time-display" style="font-size:1.1rem; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2);">
+          <i class="fas fa-clock" style="color: #FFD700;"></i>
+          <span id="current-time" style="font-family: 'Courier New', monospace; font-weight: bold; color: #fff; text-shadow: 0 0 10px rgba(255,215,0,0.5);"></span>
+        </span>
+      </div>
+      <div class="dashboard-title">熙悦天街火锅异物事件实时监测</div>
+      <div class="dashboard-logo">
+        <div> <img src="mjdataimages/dapinglogo.png" alt="" style="height: 100%; max-height: 45px; width: auto; display: block; margin-left: auto;"/></div>
+      </div>
+    </div>
+    <!-- 指标卡片 -->
+    <div class="dashboard-top-row">
+      <div class="dashboard-top-card" style="flex:2.87;">
+        <div style="display: flex; align-items: center; justify-content: space-between; height: 100%;">
+          <div style="display: flex; flex-direction: column; justify-content: center;">
+            <div style="font-size:1rem; line-height: 1.2;">MJSI苗建舆情</div>
+            <div style="font-size:1rem; line-height: 1.2;">热度指数</div>
+          </div>
+          <div id="gauge" style="width:200px;height:70px;"></div>
+        </div>
+      </div>
+      <div class="dashboard-top-card" style="flex:1.2714;">
+        <div style="font-size:0.9rem;">全网声量</div>
+        <div style="font-size:2.2rem; font-weight: bold; font-family: 'Impact', sans-serif;"><span class="counter" data-target="1499">0</span><span style="font-size:0.9rem; font-weight: normal;">条</span></div>
+      </div>
+      <div class="dashboard-top-card" style="flex:1.2714;">
+        <div style="font-size:0.9rem;">全网互动量</div>
+        <div style="font-size:2.2rem; font-weight: bold; font-family: 'Impact', sans-serif;"><span class="counter" data-target="11">0</span><span style="font-size:0.9rem; font-weight: normal;">万次</span></div>
+      </div>
+      <div class="dashboard-top-card" style="flex:1.2714;">
+        <div style="font-size:0.9rem;">扩散速度</div>
+        <div style="font-size:2.2rem; font-weight: bold; font-family: 'Impact', sans-serif;"><span class="counter" data-target="8">0</span><span style="font-size:0.9rem; font-weight: normal;">条/小时</span></div>
+      </div>
+      <div class="dashboard-top-card" style="flex:1.2714;">
+        <div style="font-size:0.9rem;">账号总量</div>
+        <div style="font-size:2.2rem; font-weight: bold; font-family: 'Impact', sans-serif;"><span class="counter" data-target="652">0</span><span style="font-size:0.9rem; font-weight: normal;">个</span></div>
+      </div>
+      <div class="dashboard-top-card" style="flex:1.2714;">
+        <div style="font-size:0.9rem;">转发量</div>
+        <div style="font-size:2.2rem; font-weight: bold; font-family: 'Impact', sans-serif;"><span class="counter" data-target="23652">0</span><span style="font-size:0.9rem; font-weight: normal;">条</span></div>
+      </div>
+      <div class="dashboard-top-card" style="flex:1.2714;">
+        <div style="font-size:0.9rem;">评论量</div>
+        <div style="font-size:2.2rem; font-weight: bold; font-family: 'Impact', sans-serif;"><span class="counter" data-target="22652">0</span><span style="font-size:0.9rem; font-weight: normal;">条</span></div>
+      </div>
+      <div class="dashboard-top-card" style="flex:1.2714;">
+        <div style="font-size:0.9rem;">点赞量</div>
+        <div style="font-size:2.2rem; font-weight: bold; font-family: 'Impact', sans-serif;"><span class="counter" data-target="61152">0</span><span style="font-size:0.9rem; font-weight: normal;">条</span></div>
+      </div>
+    </div>
+    <!-- 主体内容 -->
+    <div class="dashboard-main" style="flex:3;">
+      <!-- 左侧 -->
+      <div class="dashboard-left">
+        <div class="dashboard-block" style="flex:1.5;">
+          <div class="dashboard-block-title">新增主要信息</div>
+          <div class="new-info-container" id="newInfoContainer">
+            <!-- 信息卡片列表 -->
+            <div class="new-info-card" data-index="0">
+              <div class="new-info-number">1</div>
+              <div class="new-info-content">
+                <div class="new-info-title">抖音-长治市超凡有害生物防治有限公司</div>
+                <div class="new-info-text">目前国内尚无统一的成品检测标准不同机构因方法差异得出的结果可能天差地别</div>
+              </div>
+            </div>
+            <div class="new-info-card" data-index="1">
+              <div class="new-info-number">2</div>
+              <div class="new-info-content">
+                <div class="new-info-title">微博-食品安全监督局</div>
+                <div class="new-info-text">已对涉事火锅店进行全面检查，发现多项卫生问题，责令立即整改</div>
+              </div>
+            </div>
+            <div class="new-info-card" data-index="2">
+              <div class="new-info-number">3</div>
+              <div class="new-info-content">
+                <div class="new-info-title">微信-消费者权益保护协会</div>
+                <div class="new-info-text">呼吁消费者在餐饮消费时注意食品安全，发现问题及时举报</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 弹出框 -->
+          <div class="popup-overlay" id="popupOverlay">
+            <div class="popup-card" id="popupCard">
+              <div class="popup-title" id="popupTitle"></div>
+              <div class="popup-content" id="popupContent"></div>
+              <div class="popup-mentions" id="popupMentions"></div>
+              <div class="popup-new-badge">新</div>
+            </div>
+          </div>
+        </div>
+        <div class="dashboard-block" style="flex:2;">
+          <div class="dashboard-block-title">舆论观点</div>
+          <div class="opinion-content" style="flex:1; min-height:0; display:flex; flex-direction:column;">
+            <div class="opinion-tabs">
+              <div class="tab-btn active" data-tab="media">新闻媒体</div>
+              <div class="tab-btn" data-tab="kol">意见领袖</div>
+              <div class="tab-btn" data-tab="netizen">网民</div>
+            </div>
+            
+            <div class="opinion-sections" style="flex:1; min-height:0; position:relative; overflow:hidden;">
+              <!-- 新闻媒体观点 -->
+              <div class="opinion-section active" id="media-section">
+                <div class="opinion-header">关注焦点 - 北京熙悦天街自助火锅店食品区惊现老鼠事件</div>
+                <div class="opinion-list">
+                  <div class="scroll-content">
+                    <div class="opinion-item">
+                      <div class="opinion-title">
+                        <span>店家回应老鼠来自商场，店铺也是受害者</span>
+                      </div>
+                      <div class="percent-bar">
+                        <div class="percent-fill" style="width:40%"></div>
+                        <div class="percent-value">40%</div>
+                      </div>
+                      <div class="opinion-details">
+                        <p>涉事店家回复称：老鼠来自商场内，商场是个开放式的，目前店铺已经关闭，店内消杀工作在进行中。</p>
+                        <p>店铺工作人员表示："（老鼠）肯定是商场的，不是我们家的，我们也是受害者。"</p>
+                      </div>
+                    </div>
+                    
+                    <div class="opinion-item">
+                      <div class="opinion-title">
+                        <span>商场物业回应其他店铺未发现同样问题，正在配合调查</span>
+                      </div>
+                      <div class="percent-bar">
+                        <div class="percent-fill" style="width:30%"></div>
+                        <div class="percent-value">30%</div>
+                      </div>
+                      <div class="opinion-details">
+                        <p>物业工作人员则给出不同说法：目前我们也在配合有关部门调查，同楼层其他店铺也都是开放的，所有的店铺清理消杀，没有发现同样的情况。</p>
+                        <p>涉事商场物业工作人员对此表示："我们没有发现其他店铺有同样的问题。"</p>
+                      </div>
+                    </div>
+                    
+                    <div class="opinion-item">
+                      <div class="opinion-title">
+                        <span>网友关注食品安全与卫生问题</span>
+                      </div>
+                      <div class="percent-bar">
+                        <div class="percent-fill" style="width:20%"></div>
+                        <div class="percent-value">20%</div>
+                      </div>
+                      <div class="opinion-details">
+                        <p>网友称在北京一自助火锅店发现老鼠，引发对食品安全的担忧。</p>
+                        <p>顾客正吃着饭突然出现一只活蹦乱跳的老鼠，还有顾客不慌不忙地夹了块小蛋糕。</p>
+                      </div>
+                    </div>
+                    
+                    <div class="opinion-item">
+                      <div class="opinion-title">
+                        <span>媒体呼吁加强监管与消费者权益保护</span>
+                      </div>
+                      <div class="percent-bar">
+                        <div class="percent-fill" style="width:10%"></div>
+                        <div class="percent-value">10%</div>
+                      </div>
+                      <div class="opinion-details">
+                        <p>媒体呼吁监管部门对涉事商家进行重罚。</p>
+                        <p>建议建立食品安全黑名单制度。</p>
+                      </div>
+                    </div>
+                    
+                    <div style="width:100%;height:60px;"></div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 意见领袖观点 -->
+              <div class="opinion-section" id="kol-section">
+                <div class="opinion-header">关注焦点 - 北京自助火锅店食品区惊现老鼠及责任归属问题</div>
+                <div class="opinion-list">
+                  <div class="scroll-content">
+                    <div class="opinion-item">
+                      <div class="opinion-title">
+                        <span>店家推卸责任，将问题归咎于商场</span>
+                      </div>
+                      <div class="percent-bar">
+                        <div class="percent-fill" style="width:40%"></div>
+                        <div class="percent-value">40%</div>
+                      </div>
+                      <div class="opinion-details">
+                        <p>北京一自助火锅店食品区惊现老鼠，店家称老鼠是商场的。</p>
+                        <p>北京火锅店出现老鼠，店家却甩锅商场。</p>
+                      </div>
+                    </div>
+                    
+                    <div class="opinion-item">
+                      <div class="opinion-title">
+                        <span>顾客对食品安全和卫生状况表示担忧和恶心</span>
+                      </div>
+                      <div class="percent-bar">
+                        <div class="percent-fill" style="width:30%"></div>
+                        <div class="percent-value">30%</div>
+                      </div>
+                      <div class="opinion-details">
+                        <p>"真是恶心到家了！"北京一女子在自助火锅店就餐时，竟然发现传送带上有老鼠。</p>
+                        <p>"恶心坏了！"北京一女子在自助火锅店就餐时，发现传送带上出现老鼠。</p>
+                      </div>
+                    </div>
+                    
+                    <div class="opinion-item">
+                      <div class="opinion-title">
+                        <span>商场物业否认责任，表示其他店铺未发现同样问题</span>
+                      </div>
+                      <div class="percent-bar">
+                        <div class="percent-fill" style="width:20%"></div>
+                        <div class="percent-value">20%</div>
+                      </div>
+                      <div class="opinion-details">
+                        <p>商场物业却表示其他店铺没有这种问题，他们已经在配合相关部门调查。</p>
+                        <p>物业工作人员回应：目前我们也在配合有关部门调查，同楼层其他店铺也都是开放的，所有的店铺清理消杀，没有发现同样的情况。</p>
+                      </div>
+                    </div>
+                    
+                    <div class="opinion-item">
+                      <div class="opinion-title">
+                        <span>呼吁加强食品安全监管和卫生管理</span>
+                      </div>
+                      <div class="percent-bar">
+                        <div class="percent-fill" style="width:10%"></div>
+                        <div class="percent-value">10%</div>
+                      </div>
+                      <div class="opinion-details">
+                        <p>呼吁加强食品安全监管和刀生管理</p>
+                        <p>建议建立食品安全黑名单制度。</p>
+                      </div>
+                    </div>
+                    
+                    <div style="width:100%;height:60px;"></div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 网民观点 -->
+              <div class="opinion-section" id="netizen-section">
+                <div class="opinion-header">关注焦点 - 北京熙悦天街火锅店老鼠事件</div>
+                <div class="opinion-list">
+                  <div class="scroll-content">
+                    <div class="opinion-item">
+                      <div class="opinion-title">
+                        <span>对食品安全问题的担忧</span>
+                      </div>
+                      <div class="percent-bar">
+                        <div class="percent-fill" style="width:35.71%"></div>
+                        <div class="percent-value">35.71%</div>
+                      </div>
+                      <div class="opinion-details">
+                        <p>你永远无法想象外面的饭菜有多脏，大家能在家里做尽量在家里做。</p>
+                        <p>奉劝大家少去外面吃饭！今天听小区里一位阿姨说，她儿媳妇在一家餐厅里上班，说每天那个汤底里面，至少倒一包400克的味精进去。</p>
+                      </div>
+                    </div>
+                    
+                    <div class="opinion-item">
+                      <div class="opinion-title">
+                        <span>对商家和商场互相推卸责任的不满</span>
+                      </div>
+                      <div class="percent-bar">
+                        <div class="percent-fill" style="width:28.57%"></div>
+                        <div class="percent-value">28.57%</div>
+                      </div>
+                      <div class="opinion-details">
+                        <p>自助火锅店出现老鼠，店家称：老鼠是商场的，我们也是受害者！</p>
+                        <p>北京一自助火锅店出现老鼠，店家回应：老鼠是商场的，商场物业：其他店铺没有这种问题，正在配合调查。</p>
+                      </div>
+                    </div>
+                    
+                    <div class="opinion-item">
+                      <div class="opinion-title">
+                        <span>对事件本身的震惊和恶心</span>
+                      </div>
+                      <div class="percent-bar">
+                        <div class="percent-fill" style="width:21.43%"></div>
+                        <div class="percent-value">21.43%</div>
+                      </div>
+                      <div class="opinion-details">
+                        <p>恶心！北京一店上演惊人一幕！</p>
+                        <p>活久见！北京一火锅店惊现老鼠"吃自助"，顾客当场崩溃。</p>
+                      </div>
+                    </div>
+                    
+                    <div class="opinion-item">
+                      <div class="opinion-title">
+                        <span>呼吁加强监管与处罚</span>
+                      </div>
+                      <div class="percent-bar">
+                        <div class="percent-fill" style="width:14.29%"></div>
+                        <div class="percent-value">14.29%</div>
+                      </div>
+                      <div class="opinion-details">
+                        <p>网民呼吁监管部门对涉事商家进行重罚。</p>
+                        <p>不少网民建议建立食品安全黑名单制度。</p>
+                        <p>有网民表示再也不会去该商场任何餐厅消费。</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+
+          </div>
+        </div>
+      </div>
+      <!-- 中间 -->
+      <div class="dashboard-center">
+        <div class="dashboard-block" style="flex:2.2;">
+          <div class="dashboard-block-title">舆情声量趋势</div>
+          <div style="display: flex; flex-direction: column; height: calc(100% - 40px);">
+            <div style="flex: 1.4; min-height: 0; margin-bottom: 10px;">
+              <div id="trendChart" style="width: 100%; height: 100%;"></div>
+            </div>
+            <!-- 第二行：时间轴 -->
+            <div style="flex: 0.7; display: flex; flex-direction: column; padding: 8px 0; margin-top: 5px;">
+              <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                <div style="background: #FF6F00; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 12px; width: 60px; text-align: center; font-weight: bold;">时间轴</div>
+                <div style="flex: 1; display: flex; justify-content: center; gap: 15px;">
+                  <div style="display: flex; align-items: center; font-size: 11px;">
+                    <div style="width: 12px; height: 12px; border-radius: 50%; background: #17a2b8; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.2); margin-right: 4px;"></div>
+                    <span style="color: #666;">媒体报道</span>
+                  </div>
+                  <div style="display: flex; align-items: center; font-size: 11px;">
+                    <div style="width: 12px; height: 12px; border-radius: 50%; background: #28a745; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.2); margin-right: 4px;"></div>
+                    <span style="color: #666;">社交媒体</span>
+                  </div>
+                  <div style="display: flex; align-items: center; font-size: 11px;">
+                    <div style="width: 12px; height: 12px; border-radius: 50%; background: #ff6b35; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.2); margin-right: 4px;"></div>
+                    <span style="color: #666;">官方通报</span>
+                  </div>
+                  <div style="display: flex; align-items: center; font-size: 11px;">
+                    <div style="width: 12px; height: 12px; border-radius: 50%; background: #ffc107; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.2); margin-right: 4px;"></div>
+                    <span style="color: #666;">关键节点</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 时间轴容器 -->
+              <div style="flex: 1; position: relative;">
+                <div class="timeline-container" style="width: 100%; height: 80px; position: relative; margin: 0; overflow: hidden;">
+                  <div class="timeline-progress" id="timelineProgress" style="position: absolute; bottom: 0; left: 0; height: 4px; background: #FF6F00; z-index: 5; border-radius: 2px;"></div>
+                  <div class="timeline-indicator" style="position: absolute; top: 0; left: 50%; width: 4px; height: 100%; background: #FF6F00; z-index: 10; box-shadow: 0 0 12px rgba(255,107,53,0.6); transform: translateX(-50%);">
+                    <div style="content: ''; position: absolute; top: 0px; left: -8px; width: 20px; height: 20px; border-radius: 50%; background: #FF6F00; border: 3px solid white; box-shadow: 0 0 8px rgba(0,0,0,0.3);"></div>
+                  </div>
+                  <div class="timeline-track" id="timelineTrack" style="position: absolute; top: 10px; left: 0; height: 80%; display: flex; align-items: center; animation: scrollTimeline 60s linear infinite; width: max-content;">
+                    <!-- 时间轴事件将由JS生成 -->
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- 第三行：高热信息 -->
+            <div style="flex: 0.9; display: flex; flex-direction: column; padding: 8px 0;">
+              <!-- 高热信息内容 -->
+              <div class="hot-wrap" id="hot-module" style="flex: 1; min-height: 0;">
+                <div class="hot-head" style="margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+                  <div style="background: #FF6F00; color: #fff; padding: 4px 8px; margin-left:-12px;border-radius: 0 4px 4px 0; font-size: 12px; flex-shrink: 0; font-weight: bold;">高热信息</div>
+                  <div class="hot-tabs btn-group btn-group-toggle" data-toggle="buttons" role="tablist" style="margin: 0;">
+                    <label class="btn active" data-target="#tab-interact" style="font-size: 10px; padding: 4px 8px;">高互动</label>
+                    <label class="btn" data-target="#tab-comment" style="font-size: 10px; padding: 4px 8px;">高评论</label>
+                    <label class="btn" data-target="#tab-spread" style="font-size: 10px; padding: 4px 8px;">高扩散</label>
+                    <label class="btn" data-target="#tab-fans" style="font-size: 10px; padding: 4px 8px;">高粉丝</label>
+                  </div>
+                  <div style="flex-shrink: 0; width: 80px;"></div>
+                </div>
+
+                <div class="hot-body" style="flex: 1; min-height: 0;">
+                  <!-- 高互动（数值在媒体名称下方；每行5个，不折行） -->
+                  <div class="tab-pane show active" id="tab-interact" style="height: 100%;">
+                    <div class="container-fluid px-0" style="height: 100%;">
+                      <div class="row hot-grid no-wrap mr-0 ml-0" style="height: 100%;">
+                        <!-- 1 -->
+                        <div class="col-1-5">
+                          <div class="rank-card">
+                            <div class="d-flex align-items-center">
+                              <div class="rank-badge">1</div>
+                              <div class="src">新浪 <small>看点</small></div>
+                            </div>
+                            <div class="metric-row">
+                              <div class="metric"><i class="m-link"></i>12k</div>
+                              <div class="metric"><i class="m-cmt"></i>12k</div>
+                              <div class="metric"><i class="m-like"></i>13k</div>
+                            </div>
+                            <div class="title">爱康国宾向患癌女律师索赔1000万，患癌女律师回应爱康...</div>
+                          </div>
+                        </div>
+                        <!-- 2 -->
+                        <div class="col-1-5">
+                          <div class="rank-card">
+                            <div class="d-flex align-items-center">
+                              <div class="rank-badge">2</div>
+                              <div class="src">抖音 <small>看看新闻Knews</small></div>
+                            </div>
+                            <div class="metric-row">
+                              <div class="metric"><i class="m-link"></i>12k</div>
+                              <div class="metric"><i class="m-cmt"></i>12k</div>
+                              <div class="metric"><i class="m-like"></i>13k</div>
+                            </div>
+                            <div class="title">爱康国宾向患癌女律师索赔1000万，患癌女律师回应爱康...</div>
+                          </div>
+                        </div>
+                        <!-- 3 -->
+                        <div class="col-1-5">
+                          <div class="rank-card">
+                            <div class="d-flex align-items-center">
+                              <div class="rank-badge">3</div>
+                              <div class="src">抖音 <small>《电商》杂志社</small></div>
+                            </div>
+                            <div class="metric-row">
+                              <div class="metric"><i class="m-link"></i>12k</div>
+                              <div class="metric"><i class="m-cmt"></i>12k</div>
+                              <div class="metric"><i class="m-like"></i>13k</div>
+                            </div>
+                            <div class="title">爱康国宾向患癌女律师索赔1000万，患癌女律师回应爱康...</div>
+                          </div>
+                        </div>
+                        <!-- 4 -->
+                        <div class="col-1-5">
+                          <div class="rank-card">
+                            <div class="d-flex align-items-center">
+                              <div class="rank-badge">4</div>
+                              <div class="src">辽宁北斗云数字科技 <small>中国新闻网</small></div>
+                            </div>
+                            <div class="metric-row">
+                              <div class="metric"><i class="m-link"></i>12k</div>
+                              <div class="metric"><i class="m-cmt"></i>12k</div>
+                              <div class="metric"><i class="m-like"></i>13k</div>
+                            </div>
+                            <div class="title">爱康国宾向患癌女律师索赔1000万，患癌女律师回应爱康...</div>
+                          </div>
+                        </div>
+                        <!-- 5 -->
+                        <div class="col-1-5">
+                          <div class="rank-card">
+                            <div class="d-flex align-items-center">
+                              <div class="rank-badge">5</div>
+                              <div class="src">抖音 <small>看点</small></div>
+                            </div>
+                            <div class="metric-row">
+                              <div class="metric"><i class="m-link"></i>12k</div>
+                              <div class="metric"><i class="m-cmt"></i>12k</div>
+                              <div class="metric"><i class="m-like"></i>13k</div>
+                            </div>
+                            <div class="title">爱康国宾向患癌女律师索赔1000万，患癌女律师回应爱康...</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 高评论（每行5个，不折行） -->
+                  <div class="tab-pane" id="tab-comment" style="display:none; height: 100%;">
+                    <div class="container-fluid px-0" style="height: 100%;">
+                      <div class="row hot-grid no-wrap mr-0 ml-0" style="height: 100%;">
+                        <!-- 1 -->
+                        <div class="col-1-5">
+                          <div class="rank-card position-relative">
+                            <div class="d-flex align-items-center">
+                              <div class="rank-badge">1</div>
+                              <div class="src">抖音 <small>《电商》杂志社</small></div>
+                              <div class="fans-badge ml-auto">
+                                <small>评论量</small><div class="n">123456</div>
+                              </div>
+                            </div>
+                            <div class="title" style="margin-top: 15px !important;">爱康国宾向患癌女律师索赔1000万，患康国宾索赔千万：已向法院提出...</div>
+                          </div>
+                        </div>
+                        <!-- 2 -->
+                        <div class="col-1-5">
+                          <div class="rank-card position-relative">
+                            <div class="d-flex align-items-center">
+                              <div class="rank-badge">2</div>
+                              <div class="src">新浪 <small>新浪看点</small></div>
+                              <div class="fans-badge ml-auto">
+                                <small>评论量</small><div class="n">123456</div>
+                              </div>
+                            </div>
+                            <div class="title" style="margin-top: 15px !important;">爱康国宾向患癌女律师索赔1000万，患癌女律师回应爱康国宾索赔千万：已向法院提出...</div>
+                          </div>
+                        </div>
+                        <!-- 3 -->
+                        <div class="col-1-5">
+                          <div class="rank-card position-relative">
+                            <div class="d-flex align-items-center">
+                              <div class="rank-badge">3</div>
+                              <div class="src">新浪财经头条号 <small>证券时报网</small></div>
+                              <div class="fans-badge ml-auto">
+                                <small>评论量</small><div class="n">123456</div>
+                              </div>
+                            </div>
+                            <div class="title" style="margin-top: 15px !important;">爱康国宾向患癌女律师索赔1000万，患癌女律师回应爱康国宾索赔千万：已向法院提出...</div>
+                          </div>
+                        </div>
+                        <!-- 4 -->
+                        <div class="col-1-5">
+                          <div class="rank-card position-relative">
+                            <div class="d-flex align-items-center">
+                              <div class="rank-badge">4</div>
+                              <div class="src">抖音 <small>看看新闻Knews</small></div>
+                              <div class="fans-badge ml-auto">
+                                <small>评论量</small><div class="n">123456</div>
+                              </div>
+                            </div>
+                            <div class="title" style="margin-top:15px !important;">爱康国宾向患癌女律师索赔1000万，患癌女律师回应爱康国宾索赔千万：已向法院提出...</div>
+                          </div>
+                        </div>
+                        <!-- 5 -->
+                        <div class="col-1-5">
+                          <div class="rank-card position-relative">
+                            <div class="d-flex align-items-center">
+                              <div class="rank-badge">5</div>
+                              <div class="src">新浪看点 <small>新闻眼</small></div>
+                              <div class="fans-badge ml-auto">
+                                <small>评论量</small><div class="n">123456</div>
+                              </div>
+                            </div>
+                            <div class="title" style="margin-top: 12px !important;">爱康国宾向患癌女律师索赔1000万，患康国宾索赔千万：已向法院提出...</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 高扩散（转发扩散层级关系图） -->
+                  <div class="tab-pane" id="tab-spread" style="display:none; height: 100%;">
+                    <div id="spread-relation-chart" style="width: 100%; height: 100px; position: relative; overflow: hidden;"></div>
+                  </div>
+
+                  <!-- 高粉丝（每行5个，不折行） -->
+                  <div class="tab-pane" id="tab-fans" style="display:none; height: 100%;">
+                    <div class="container-fluid px-0" style="height: 100%;">
+                      <div class="row hot-grid no-wrap mr-0 ml-0" style="height: 100%;">
+                        <!-- 1 -->
+                        <div class="col-1-5">
+                          <div class="rank-card">
+                            <div class="d-flex align-items-center">
+                              <div class="rank-badge">1</div>
+                              <div class="src">新浪 <small>新浪看点</small></div>
+                              <div class="fans-badge ml-auto">
+                                <small>粉丝量</small><div class="n">1.11亿</div>
+                              </div>
+                            </div>
+                            <div class="title">爱康国宾向患癌女律师索赔1000万，患癌女律师回应爱康国宾索赔千万：已向法院提出...</div>
+                          </div>
+                        </div>
+                        <!-- 2 -->
+                        <div class="col-1-5">
+                          <div class="rank-card">
+                            <div class="d-flex align-items-center">
+                              <div class="rank-badge">2</div>
+                              <div class="src">新浪 <small>新浪看点</small></div>
+                              <div class="fans-badge ml-auto">
+                                <small>粉丝量</small><div class="n">1.11亿</div>
+                              </div>
+                            </div>
+                            <div class="title">爱康国宾向患癌女律师索赔1000万，患癌女律师回应爱康国宾索赔千万：已向法院提出...</div>
+                          </div>
+                        </div>
+                        <!-- 3 -->
+                        <div class="col-1-5">
+                          <div class="rank-card">
+                            <div class="d-flex align-items-center">
+                              <div class="rank-badge">3</div>
+                              <div class="src">新浪 <small>新浪看点</small></div>
+                              <div class="fans-badge ml-auto">
+                                <small>粉丝量</small><div class="n">1.11亿</div>
+                              </div>
+                            </div>
+                            <div class="title">爱康国宾向患癌女律师索赔1000万，患癌女律师回应爱康国宾索赔千万：已向法院提出...</div>
+                          </div>
+                        </div>
+                        <!-- 4 -->
+                        <div class="col-1-5">
+                          <div class="rank-card">
+                            <div class="d-flex align-items-center">
+                              <div class="rank-badge">4</div>
+                              <div class="src">新浪 <small>新浪看点</small></div>
+                              <div class="fans-badge ml-auto">
+                                <small>粉丝量</small><div class="n">1.11亿</div>
+                              </div>
+                            </div>
+                            <div class="title">爱康国宾向患癌女律师索赔1000万，患癌女律师回应爱康国宾索赔千万：已向法院提出...</div>
+                          </div>
+                        </div>
+                        <!-- 5 -->
+                        <div class="col-1-5">
+                          <div class="rank-card">
+                            <div class="d-flex align-items-center">
+                              <div class="rank-badge">5</div>
+                              <div class="src">新浪 <small>新浪看点</small></div>
+                              <div class="fans-badge ml-auto">
+                                <small>粉丝量</small><div class="n">1.11亿</div>
+                              </div>
+                            </div>
+                            <div class="title">爱康国宾向患癌女律师索赔1000万，患癌女律师回应爱康国宾索赔千万：已向法院提出...</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 右侧 -->
+      <div class="dashboard-right">
+        <div class="dashboard-block" style="flex:2.2;">
+          <div class="dashboard-block-title">媒体级别</div>
+          <div style="display: flex; flex-direction: column; height: calc(100% - 40px);">
+            <!-- 媒体级别柱状图 -->
+            <div style="flex: 1; min-height: 0;">
+              <div id="media-bar" style="width: 100%; height: 100%;"></div>
+            </div>
+            <!-- 活跃账号柱状图 -->
+            <div style="flex: 1; min-height: 0;">
+              <div id="account-bar" style="width: 100%; height: 100%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 底部内容 -->
+    <!-- 底部内容 -->
+<div class="dashboard-bottom-row" style="flex:1;">
+  <div class="dashboard-bottom-block" style="flex:0.95;">
+    <div class="dashboard-block-title" id="keyword-title">高频词·全量</div>
+    <div style="flex:1; min-height:0; display:flex;">
+      <div id="keyword-chart" style="width:100%; height:100%;"></div>
+    </div>
+  </div>
+  <div class="dashboard-bottom-block" style="flex:0.833;">
+    <div class="dashboard-block-title">舆情增量趋势</div>
+    <div style="flex:1; min-height:0; display:flex;">
+      <div id="increment-line-chart" style="width:100%; height:100%;"></div>
+    </div>
+  </div>
+  <div class="dashboard-bottom-block" style="flex:0.833;">
+    <div class="dashboard-block-title">舆情增速趋势</div>
+    <div style="flex:1; min-height:0; display:flex;">
+      <div id="growth-speed-chart" style="width:100%; height:100%;"></div>
+    </div>
+  </div>
+  <div class="dashboard-bottom-block" style="flex:0.833;">
+    <div class="dashboard-block-title">账号发布趋势</div>
+    <div style="flex:1; min-height:0; display:flex;">
+      <div id="account-trend-chart" style="width:100%; height:100%;"></div>
+    </div>
+  </div>
+  <div class="dashboard-bottom-block" style="flex:0.85;">
+    <div class="dashboard-block-title" id="diffusion-title">扩散渠道分布</div>
+    <div style="flex:1; min-height:0; display:flex;">
+      <div id="diffusion-chart" style="width:100%; height:100%;"></div>
+    </div>
+  </div>
+</div>
+  </div>
+  <!-- ECharts JS -->
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <!-- ECharts WordCloud Plugin -->
+  <script src="https://cdn.jsdelivr.net/npm/echarts-wordcloud@2.1.0/dist/echarts-wordcloud.min.js"></script>
+  <!-- FontAwesome for icons -->
+  <script src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/js/all.min.js"></script>
+  
+  <!-- 仪表盘脚本 -->
+  <script>
+    (function () {
+      const chart = echarts.init(document.getElementById('gauge'));
+      const value = 50.8;            // 👉 按实际数据替换
+      chart.setOption({
+       // title:{text:'MJSI苗建舆情热度指数',left:'center',top:'2%',textStyle:{color:'#fff',fontSize:14}},
+        series:[{
+          type:'gauge',
+          startAngle:180,
+          endAngle:0,
+          radius:'170%',
+          center:['65%','90%'],
+          min:0,
+          max:100,
+          progress:{
+            show:true,
+            width:10,
+            roundCap:true,
+            itemStyle:{color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+            { offset: 0, color: '#FFFCC5' },
+            { offset: 1, color: '#FFF30A' }
+        ])}
+          },
+          axisLine:{
+            roundCap:true,
+            lineStyle:{
+              width:10,
+              color:[[1,'rgba(157,2,8,0.15)']]
+            }
+          },
+          axisTick:{show:false},
+          splitLine:{show:false},
+          axisLabel:{show:false},
+          pointer:{show:false},
+          anchor:{show:false},
+          title:{show:false},
+          detail:{
+            valueAnimation:true,
+            fontSize:18,
+            fontWeight:'bold',
+            color:'#fff',
+            offsetCenter:[0,'-20%'],
+            formatter:`{valueStyle|${value}}\n{maxStyle|(最高100)}`,
+            rich:{valueStyle:{fontSize:24,fontWeight:'bold',color:'#FFF600',lineHeight:22,fontFamily:'Impact'},
+                  maxStyle:{fontSize:10,color:'rgba(255,255,255,0.8)',lineHeight:18}}
+          },
+          data:[{value}]
+        }]
+      });
+      window.addEventListener('resize',()=>chart.resize());
+    })();
+  </script>
+  
+  <!-- 动态时间脚本 -->
+  <script>
+    // 动态显示当前时间
+    function updateTime() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      
+      const timeString = `${year}年${month}月${day}日 ${hours}:${minutes}:${seconds}`;
+      document.getElementById('current-time').textContent = timeString;
+    }
+    
+    // 初始化时间显示
+    updateTime();
+    // 每秒更新一次时间，实现实时监测效果
+    setInterval(updateTime, 1000);
+  </script>
+  
+  <!-- 翻牌器脚本 -->
+  <script>
+    // 翻牌器动画函数
+    function animateCounter(element, target, duration = 2000) {
+      const start = 0;
+      const increment = target / (duration / 16); // 60fps
+      let current = start;
+      
+      const timer = setInterval(() => {
+        current += increment;
+        if (current >= target) {
+          current = target;
+          clearInterval(timer);
+        }
+        
+        // 格式化数字，添加千位分隔符
+        const formattedValue = Math.floor(current).toLocaleString();
+        element.textContent = formattedValue;
+      }, 16);
+    }
+    
+    // 更新所有计数器
+    function updateAllCounters() {
+      const counters = document.querySelectorAll('.counter');
+      counters.forEach(counter => {
+        const target = parseInt(counter.getAttribute('data-target'));
+        animateCounter(counter, target);
+      });
+    }
+    
+    // 页面加载时执行
+    document.addEventListener('DOMContentLoaded', function() {
+      updateAllCounters();
+    });
+    
+    // 每30秒更新一次数据
+    setInterval(updateAllCounters, 30000);
+  </script>
+  
+  <!-- 舆论观点模块脚本 -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const tabs = document.querySelectorAll('.tab-btn');
+      const sections = document.querySelectorAll('.opinion-section');
+      let currentTab = 0;
+      let tabRotationInterval;
+      
+      // 计算内容高度并设置动画持续时间
+      function calculateAnimationDuration(section) {
+        const scrollContent = section.querySelector('.scroll-content');
+        if (!scrollContent) return 90000; // 默认90秒
+        
+        const contentHeight = scrollContent.scrollHeight;
+        const visibleHeight = section.querySelector('.opinion-list').offsetHeight;
+        
+        if (contentHeight <= visibleHeight) {
+          return 18000; // 如果内容不足一屏，9秒暂停+9秒切换
+        }
+        
+        // 根据内容长度计算动画时间（每100px增加6秒）
+        const extraTime = Math.max(0, (contentHeight - visibleHeight) / 100 * 6000);
+        return 18000 + extraTime; // 基础18秒(9秒暂停+9秒滚动) + 额外时间
+      }
+      
+      // 启动当前标签的滚动动画
+      function startCurrentTabAnimation() {
+        const currentSection = sections[currentTab];
+        const scrollContent = currentSection.querySelector('.scroll-content');
+        if (!scrollContent) return;
+        
+        // 先停止当前动画
+        scrollContent.style.animation = 'none';
+        void scrollContent.offsetWidth; // 强制重绘
+        
+        // 计算动画持续时间
+        const duration = calculateAnimationDuration(currentSection);
+        
+        // 计算滚动距离
+        const contentHeight = scrollContent.scrollHeight;
+        const visibleHeight = currentSection.querySelector('.opinion-list').offsetHeight;
+        
+        if (contentHeight > visibleHeight) {
+          // 内容超出可视区域，需要滚动
+          const scrollDistance = -(contentHeight - visibleHeight);
+          scrollContent.style.setProperty('--scroll-distance', `${scrollDistance}px`);
+          scrollContent.classList.add('scroll-up-dynamic');
+          scrollContent.classList.remove('scroll-up');
+        } else {
+          // 内容不足一屏，不需要滚动
+          scrollContent.classList.remove('scroll-up-dynamic');
+          scrollContent.classList.add('scroll-up');
+        }
+        
+        // 设置新的动画
+        const animationName = contentHeight > visibleHeight ? 'scroll-up-dynamic' : 'scroll-up';
+        scrollContent.style.animation = `${animationName} ${duration}ms linear forwards`;
+        
+        // 清除之前的定时器
+        clearTimeout(tabRotationInterval);
+        
+        // 设置切换标签的定时器
+        tabRotationInterval = setTimeout(() => {
+          rotateToNext();
+        }, duration);
+      }
+      
+      // 切换到指定标签
+      function switchToTab(index) {
+        // 移除当前活动状态
+        tabs.forEach(tab => tab.classList.remove('active'));
+        sections.forEach(section => section.classList.remove('active'));
+        
+        // 设置新的活动状态
+        tabs[index].classList.add('active');
+        sections[index].classList.add('active');
+        
+        currentTab = index;
+        
+        // 重置所有滚动内容的位置
+        sections.forEach(section => {
+          const scrollContent = section.querySelector('.scroll-content');
+          if (scrollContent) {
+            scrollContent.style.transform = 'translateY(0)';
+            scrollContent.classList.remove('scroll-up', 'scroll-up-dynamic');
+          }
+        });
+        
+        // 启动新标签的滚动动画
+        startCurrentTabAnimation();
+      }
+      
+      // 切换到下一个标签
+      function rotateToNext() {
+        const nextTab = (currentTab + 1) % tabs.length;
+        switchToTab(nextTab);
+      }
+      
+      // 初始化
+      switchToTab(0);
+      
+      // 初始化进度条动画
+      setTimeout(() => {
+        document.querySelectorAll('.percent-fill').forEach(fill => {
+          const width = fill.style.width;
+          fill.style.width = '0';
+          setTimeout(() => {
+            fill.style.width = width;
+          }, 100);
+        });
+      }, 500);
+      
+      // 标签点击事件
+      tabs.forEach((tab, index) => {
+        tab.addEventListener('click', () => {
+          switchToTab(index);
+        });
+      });
+      
+
+    });
+  </script>
+  
+  <!-- 媒体级别轮播脚本 -->
+  <script>
+    const mediaChart = echarts.init(document.getElementById('media-bar'));
+    const accountChart = echarts.init(document.getElementById('account-bar'));
+
+    const mediaLevels = ["商业媒体", "央级", "省部级", "市县级", "其他", "其他2"];
+    const mediaValues = [210, 120, 85, 65, 45, 30];
+
+    const accountMap = {
+      "全部": [
+        { name: "界面新闻", value: 45 },
+        { name: "人民网", value: 42 },
+        { name: "新华网", value: 38 },
+        { name: "央视新闻", value: 36 },
+        { name: "虎嗅", value: 32 },
+        { name: "澎湃新闻", value: 25 },
+        { name: "新京报", value: 22 },
+        { name: "杭州日报", value: 18 },
+        { name: "广州日报", value: 16 },
+        { name: "知乎", value: 15 }
+      ],
+      "商业媒体": [
+        { name: "界面新闻", value: 45 },
+        { name: "虎嗅", value: 32 }
+      ],
+      "央级": [
+        { name: "人民网", value: 42 },
+        { name: "新华网", value: 38 },
+        { name: "央视新闻", value: 36 }
+      ],
+      "省部级": [
+        { name: "澎湃新闻", value: 25 },
+        { name: "新京报", value: 22 }
+      ],
+      "市县级": [
+        { name: "杭州日报", value: 18 },
+        { name: "广州日报", value: 16 }
+      ],
+      "其他": [
+        { name: "知乎", value: 15 }
+      ],
+      "其他2": [
+        { name: "微博用户", value: 12 },
+        { name: "个人博客", value: 8 },
+        { name: "自媒体号", value: 6 },
+        { name: "论坛用户", value: 4 },
+        { name: "评论员", value: 3 }
+      ]
+    };
+
+    function renderMediaBar(currentIndex = -1) {
+      mediaChart.setOption({
+       //title: { text: '媒体级别', left: '0', top: 0, textStyle: { color: '#222', fontSize: 14 } },
+        grid: { top: 40, bottom: 30, left: '3%', right: '4%', containLabel: true },
+        xAxis: {
+          type: 'category',
+          data: mediaLevels,
+          axisLabel: { fontSize: 12, color: '#666' },
+          axisLine: { lineStyle: { color: '#ccc' } },
+          axisTick: { show: false }
+        },
+        yAxis: {
+          type: 'value',
+          name: '单位：条',
+          nameTextStyle: { 
+            color: '#808080', 
+            fontSize: 12,
+            padding: [0, 0, 0, -20] ,// 上 右 下 左，左侧加5px即可右移
+          },
+          axisLabel: { 
+            fontSize: 12, 
+            color: '#666',
+          },
+          splitLine: { lineStyle: { color: '#e0e0e0', type: 'dashed' } }
+        },
+        series: [{
+          type: 'bar',
+          data: mediaValues.map((v, i) => ({
+            value: v,
+            itemStyle: {
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: '#F6AB00' },
+                { offset: 1, color: '#FFCE48' }
+              ]),
+              opacity: currentIndex === -1 || currentIndex === i ? 1 : 0.2,
+              borderRadius: [10, 10, 0, 0]
+            },
+            label: {
+              show: true,
+              position: 'top',
+              color: '#333',
+              fontSize: 12
+            }
+          })),
+          barWidth: '40%'
+        }]
+      });
+    }
+
+    function renderAccountBar(levelName = "全部") {
+      const data = accountMap[levelName] || [];
+      accountChart.setOption({
+        title: { text: '活跃账号', left: '0', top: 0, textStyle: { color: '#222', fontSize: 14 } },
+        legend: {
+          data: [levelName],
+          top: 10,
+          icon: 'circle',
+          textStyle: { fontSize: 12 }
+        },
+        grid: { top: 40, bottom: 12, left: '3%', right: '10%', containLabel: true },
+        xAxis: {
+          type: 'value',
+          name: '单位：条',
+          nameTextStyle: { 
+            color: '#808080', 
+            fontSize: 12,
+            padding: [0, 0, 0, -50] ,// 上 右 下 左，左侧加5px即可右移
+          },
+          axisLabel: { fontSize: 12, color: '#666' },
+          splitLine: { lineStyle: { color: '#e0e0e0', type: 'dashed' } }
+        },
+        yAxis: {
+          type: 'category',
+          inverse: true,  // 反转轴实现降序
+          data: data.map(d => d.name),
+          axisLabel: { fontSize: 12, color: '#666' },
+          axisLine: { lineStyle: { color: '#ccc' } },
+          axisTick: { show: false }
+        },
+        series: [{
+          name: levelName,
+          type: 'bar',
+          data: data.map(d => d.value),
+          barWidth: '15px',
+          itemStyle: {
+            color: new echarts.graphic.LinearGradient(1, 0, 0, 0, [
+              { offset: 0, color: '#F6AB00' },
+              { offset: 1, color: '#FFCE48' }
+            ]),
+            borderRadius: [0, 10, 10, 0]
+          },
+          label: {
+            show: true,
+            position: 'right',
+            fontSize: 12,
+            color: '#333'
+          }
+        }]
+      });
+    }
+
+    // 初始化
+    let currentIndex = -1; // -1 表示全部
+    renderMediaBar(currentIndex);
+    renderAccountBar("全部");
+
+    // 启动轮播
+    setInterval(() => {
+      currentIndex = (currentIndex + 1) % (mediaLevels.length + 1); // +1 表示包括"全部"
+      const currentName = currentIndex === 0 ? "全部" : mediaLevels[currentIndex - 1];
+      renderMediaBar(currentIndex - 1);
+      renderAccountBar(currentName);
+    }, 5000); // 每 5 秒切换一次
+
+    // 响应式调整
+    window.addEventListener('resize', function() {
+      mediaChart.resize();
+      accountChart.resize();
+    });
+  </script>
+  
+  <!-- 舆情增量趋势脚本 -->
+  <script>
+    (function(){
+      const dates  = ['06-14','06-15','06-16','06-18','06-20','06-22','06-24','06-26','06-28'];
+      const values = [2830,2840,2820,2960,3100,3010,3120,3200,3280];
+      const orange = '#F6AB00';
+      const lineGradient = new echarts.graphic.LinearGradient(0,0,0,1,[
+        {offset:0,color:'#FFA726'},
+        {offset:1,color:orange}
+      ]);
+      let currentIndex = -1;
+      const incChart = echarts.init(document.getElementById('increment-line-chart'));
+      const option = {
+        grid:{ left:'15%', right:12, top:30, bottom:28 },
+        xAxis:{
+          type:'category', data:dates,
+          axisTick:{show:false},
+          axisLine:{lineStyle:{color:'#E0E0E0'}},
+          axisLabel:{color:'#808080',fontSize:10}
+        },
+        yAxis:{
+          type:'value', min:2800, max:3300, splitNumber:5,
+          axisLine:{show:false}, axisTick:{show:false},
+          axisLabel:{color:'#808080',fontSize:10},
+          splitLine:{show:true,lineStyle:{type:'dashed',color:'#D5D5D5'}},
+          name: '单位:条',
+          nameTextStyle: { 
+            color: '#808080', 
+            fontSize: 10 ,
+            padding: [0, 0, 0, -40] // 上 右 下 左，左侧加5px即可右移
+          },
+          nameLocation: 'end',
+          nameGap: 15
+        },
+        tooltip:{
+          trigger:'axis', 
+          axisPointer:{type:'line',lineStyle:{color:orange,width:1.7}},
+          backgroundColor:'rgba(255,255,255,0.70)', 
+          borderColor:orange, 
+          borderWidth:1,
+          extraCssText:'border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,0.1);',
+          textStyle:{color:orange,fontSize:12,fontWeight:600},
+          formatter: p => {
+            const d=p[0];
+            return `
+              <div style="padding:2px 4px 2px;">
+                <div style="font-size:12px;font-weight:600;">${d.axisValue}</div>
+                <div style="display:flex;align-items:center;margin-top:2px;">
+                  <span style="width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px;background:${orange};"></span>
+                  <span style="font-size:12px;">增量: ${d.data}</span>
+                </div>
+              </div>`;
+          },
+          confine: true
+        },
+        series:[{
+          type:'line', data:values, symbol:'circle', symbolSize:10,
+          lineStyle:{width:3,color:lineGradient},
+          itemStyle:{ borderColor:orange,borderWidth:2, color: p => (p.dataIndex===currentIndex ? orange : '#FFDDC0') },
+          emphasis:{ itemStyle:{ borderWidth:4 } }
+        }]
+      };
+      incChart.setOption(option);
+      function cycle(){
+        const len = dates.length;
+        incChart.dispatchAction({type:'downplay',seriesIndex:0,dataIndex:currentIndex});
+        currentIndex = (currentIndex+1)%len;
+        incChart.dispatchAction({type:'highlight',seriesIndex:0,dataIndex:currentIndex});
+        incChart.dispatchAction({type:'showTip', seriesIndex:0,dataIndex:currentIndex});
+      }
+      cycle();
+      setInterval(cycle,2500);
+      window.addEventListener('resize',()=>incChart.resize());
+    })();
+  </script>
+  
+  <!-- 舆情增速趋势脚本（复制一份动态折线图） -->
+  <script>
+    (function(){
+      const datesSpeed  = ['06-14','06-15','06-16','06-18','06-20','06-22','06-24','06-26','06-28'];
+      const valuesSpeed = [20,22,19,28,35,30,33,36,38];
+      const orange = '#F6AB00';
+      const lineGradient = new echarts.graphic.LinearGradient(0,0,0,1,[
+        {offset:0,color:'#FFA726'},
+        {offset:1,color:orange}
+      ]);
+      let idx = -1;
+      const speedChart = echarts.init(document.getElementById('growth-speed-chart'));
+      const optionSpeed = {
+        grid:{ left:'10%', right:12, top:30, bottom:28 },
+        xAxis:{
+          type:'category', data:datesSpeed,
+          axisTick:{show:false},
+          axisLine:{lineStyle:{color:'#E0E0E0'}},
+          axisLabel:{color:'#808080',fontSize:10}
+        },
+        yAxis:{
+          type:'value', splitNumber:5,
+          axisLine:{show:false}, axisTick:{show:false},
+          axisLabel:{color:'#808080',fontSize:10},
+          splitLine:{show:true,lineStyle:{type:'dashed',color:'#D5D5D5'}},
+          name: '单位:条',
+          nameTextStyle: { 
+            color: '#808080', 
+            fontSize: 10,
+            padding: [0, 0, 0, -10] // 上 右 下 左，左侧加5px即可右移
+             },
+          nameLocation: 'end',
+          nameGap: 15
+        },
+        tooltip:{
+          trigger:'axis', 
+          axisPointer:{type:'line',lineStyle:{color:orange,width:1.7}},
+          backgroundColor:'rgba(255,255,255,0.70)', borderColor:orange, borderWidth:1,
+          extraCssText:'border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,0.1);',
+          textStyle:{color:orange,fontSize:12,fontWeight:600},
+          formatter: p => {
+            const d=p[0];
+            return `
+              <div style="padding:2px 4px 2px;">
+                <div style="font-size:12px;font-weight:600;">${d.axisValue}</div>
+                <div style="display:flex;align-items:center;margin-top:2px;">
+                  <span style="width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px;background:${orange};"></span>
+                  <span style="font-size:12px;">增速: ${d.data}</span>
+                </div>
+              </div>`;
+          },
+          confine: true
+        },
+        series:[{
+          type:'line', data:valuesSpeed, symbol:'circle', symbolSize:10,
+          lineStyle:{width:3,color:lineGradient},
+          itemStyle:{ borderColor:orange,borderWidth:2, color: p => (p.dataIndex===idx ? orange : '#FFDDC0') },
+          emphasis:{ itemStyle:{ borderWidth:4 } }
+        }]
+      };
+      speedChart.setOption(optionSpeed);
+      function cycle(){
+        const len = datesSpeed.length;
+        speedChart.dispatchAction({type:'downplay',seriesIndex:0,dataIndex:idx});
+        idx = (idx+1)%len;
+        speedChart.dispatchAction({type:'highlight',seriesIndex:0,dataIndex:idx});
+        speedChart.dispatchAction({type:'showTip', seriesIndex:0,dataIndex:idx});
+      }
+      cycle();
+      setInterval(cycle,2500);
+      window.addEventListener('resize',()=>speedChart.resize());
+    })();
+  </script>
+  
+  <!-- 舆情声量趋势折线图脚本 -->
+  <script>
+    /* 时间刻度 */
+    const times = [
+      "00:00","00:30","01:00","01:30","02:00","02:30","03:00","03:30",
+      "04:00","04:30","05:00","05:30","06:00","06:30","07:00","07:30",
+      "08:00","08:30","09:00","09:30","10:00","10:30","11:00","11:30",
+      "12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30",
+      "16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30",
+      "20:00","20:30","21:00","21:30","22:00","22:30","23:00","23:30"
+    ];
+
+    /* 示例声量数据 */
+    const values = [
+       7,  8,  8,  9, 12, 10, 16, 15,
+      14, 12, 12, 13, 17, 30, 19, 19,
+      16, 26, 32, 43, 55, 60, 70, 60,
+      50, 45, 39, 30, 30, 30, 30, 29,
+      29, 25, 21, 20, 15, 13, 16, 17,
+      12, 13, 13, 17, 15, 13, 12, 12
+    ];
+
+    /* 敏感率数据（百分比） */
+    const sensitivityValues = [
+      18, 20, 22, 25, 28, 32, 35, 38,
+      42, 45, 48, 52, 55, 58, 62, 65,
+      68, 72, 75, 78, 82, 85, 88, 92,
+      95, 92, 88, 85, 82, 78, 75, 72,
+      68, 65, 62, 58, 55, 52, 48, 45,
+      42, 38, 35, 32, 28, 25, 22, 18
+    ];
+
+    /* 关键节点定义 */
+    const keyNodes = [
+      { idx: 14, time: "07:00", event: "官方首次回应" },
+      { idx: 19, time: "09:30", event: "主流媒体集中报道" },
+      { idx: 26, time: "13:00", event: "多方发布澄清信息" }
+    ];
+
+    /* effectScatter 数据 */
+    const scatterData = keyNodes.map(n => ({
+      value: [times[n.idx], values[n.idx]],
+      label: {
+        show: true,
+        position: "top",          // 文字在点的正上方
+        offset: [0, -10],         // 向上偏移一点避免压着点
+        formatter: `${n.time}\n${n.event}`,
+        backgroundColor: "rgba(255,255,255,0.9)",
+        borderColor: "#F6AB00",
+        borderWidth: 1,
+        borderRadius: 4,
+        padding: [4, 6],
+        color: "#333",
+        fontSize: 12,
+        lineHeight: 16
+      },
+      itemStyle: { color: "#F6AB00" },
+      symbolSize: 12             // 基础圆点大小
+    }));
+
+    const option = {
+      backgroundColor: "transparent",
+      grid: { top: 45, bottom:20, left: 30, right: 30 },
+      legend: {
+        data: ['声量', '敏感率'],
+        top: 13,
+        right: 100,
+        textStyle: {
+          color: '#666',
+          fontSize: 12
+        },
+        itemWidth: 12,
+        itemHeight: 8,
+        itemGap: 20
+      },
+      tooltip: { trigger: "axis", axisPointer: { type: "line" } },
+      xAxis: {
+        type: "category",
+        data: times,
+        boundaryGap: false,
+        axisLabel: { color: "#666" },
+        axisLine: { lineStyle: { color: "#ccc" } }
+      },
+      yAxis: [
+        {
+          type: "value",
+          name: "单位:条",
+          nameTextStyle: { 
+            color: "#666", 
+            fontSize: 12,
+            padding: [0, 0, 0, -10] // 上 右 下 左，左侧加5px即可右移
+          },
+          axisLabel: { color: "#666" },
+          splitLine: { show: true, lineStyle: { color: "#e0e0e0", type: "dashed" } },
+          axisLine: { show: false },
+          axisTick: { show: false }
+        },
+        {
+          type: "value",
+          name: "敏感率(%)",
+          nameTextStyle: { color: "#666", fontSize: 12 },
+          axisLabel: { color: "#666" },
+          splitLine: { show: false },
+          axisLine: { show: false },
+          axisTick: { show: false },
+          max: 100,
+          min: 0
+        }
+      ],
+      series: [
+        /* 主折线 */
+        {
+          name: "声量",
+          type: "line",
+          data: values,
+          lineStyle: { color: "#F6AB00", width: 3 },
+          itemStyle: { color: "#F6AB00", borderColor: "#fff", borderWidth: 2 },
+          symbolSize: 6,
+          areaStyle: {
+            color: {
+              type: "linear",
+              x: 0, y: 0, x2: 0, y2: 1,
+              colorStops: [
+                { offset: 0, color: "rgba(246,171,0,0.40)" },
+                { offset: 1, color: "rgba(246,171,0,0.05)" }
+              ]
+            }
+          },
+          label: {
+            show: true,
+            position: "top",
+            formatter: "{c}",
+            color: "#F6AB00",
+            fontSize: 12
+          },
+          markPoint: {
+            symbol: "pin",
+            symbolSize: 50,
+            label: {
+              formatter: p => `${p.value}`,
+              color: "#fff",
+              fontWeight: "bold",
+              fontSize: 12,
+              padding: [2, 4]
+            },
+            itemStyle: { color: "#F6AB00" },
+            data: [{ type: "max", name: "峰值" }]
+          },
+          animation: true,
+          animationDuration: 2000,
+          animationEasing: 'easeOutQuart'
+        },
+        /* 敏感率折线 */
+        {
+          name: "敏感率",
+          type: "line",
+          yAxisIndex: 1,
+          data: sensitivityValues,
+          lineStyle: { color: "#FE8301", width: 2 },
+          itemStyle: { color: "#FE8301", borderColor: "#FE8301", borderWidth: 2 },
+          symbol: "triangle",
+          symbolSize: 6,
+          label: {
+            show: false
+          },
+          markPoint: {
+            symbol: "pin",
+            symbolSize: 50,
+            label: {
+              formatter: p => `${p.value}%`,
+              color: "#fff",
+              fontWeight: "bold",
+              fontSize: 12,
+              padding: [2, 4]
+            },
+            itemStyle: { color: "#FE8301" },
+            data: [{ type: "max", name: "峰值" }]
+          },
+          animation: true,
+          animationDuration: 2000,
+          animationEasing: 'easeOutQuart'
+        },
+        /* 关键节点带光晕效果 */
+        {
+          name: "关键节点",
+          type: "effectScatter",
+          coordinateSystem: "cartesian2d",
+          data: scatterData,
+          symbol: "circle",
+          itemStyle: { color: "#FE8301" },
+          rippleEffect: {
+            period: 3,       // 越小越快
+            scale: 4,        // 波纹放大倍数
+            brushType: "stroke",
+            color: "#FE8301"
+          },
+          z: 10,
+          animation: true,
+          animationDuration: 2000,
+          animationEasing: 'easeOutQuart'
+        }
+      ]
+    };
+
+    const chart = echarts.init(document.getElementById("trendChart"));
+    chart.setOption(option);
+    window.addEventListener("resize", () => chart.resize());
+  </script>
+  
+  <!-- 时间轴脚本 -->
+  <script>
+    // 生成时间轴事件数据
+    const timelineEvents = [
+      { 
+        date: "07月16日", 
+        content: "通过媒体公开投诉,披露十年漏检经过,事件进入公众视野", 
+        media: "张晓玲",
+        type: "key-event",
+        detail: "张晓玲通过媒体公开投诉，披露十年漏检经过，事件进入公众视野。"
+      },
+      { 
+        date: "07月17日", 
+        content: "发布首份声明:《关于张女士客诉事件的声明》", 
+        media: "爱康国宾",
+        type: "official",
+        detail: "爱康国宾发布首份声明：《关于张女士客诉事件的声明》。"
+      },
+      { 
+        date: "07月18日", 
+        content: "发布二次声明:爱康完成内部核查及外部专家评估确认无责,愿接受第三方权威机构鉴定", 
+        media: "爱康国宾",
+        type: "official",
+        detail: "爱康国宾发布二次声明：爱康完成内部核查及外部专家评估确认无责，愿接受第三方权威机构鉴定。"
+      },
+      { 
+        date: "07月19日", 
+        content: "反驳爱康声明", 
+        media: "张晓玲",
+        type: "key-event",
+        detail: "张晓玲反驳爱康声明。"
+      },
+      { 
+        date: "07月30日", 
+        content: "召开媒体说明会", 
+        media: "爱康国宾",
+        type: "official",
+        detail: "爱康国宾召开媒体说明会。"
+      }
+    ];
+    
+    // 生成时间轴HTML
+    const timelineTrack = document.getElementById('timelineTrack');
+    let timelineHTML = '';
+    
+    // 生成两份数据以实现无缝滚动
+    for (let i = 0; i < 2; i++) {
+      timelineEvents.forEach((event, index) => {
+        timelineHTML += `
+          <div class="timeline-event ${event.type}" 
+               data-index="${index}" 
+               data-date="${event.date}" 
+               data-content="${event.content}"
+               data-media="${event.media}"
+               data-detail="${event.detail}">
+            <div class="timeline-event-type"></div>
+            <div class="timeline-date">${event.date}</div>
+            <div class="timeline-media">${event.media}</div>
+            <div class="timeline-content">${event.content}</div>
+          </div>
+        `;
+      });
+    }
+    
+    timelineTrack.innerHTML = timelineHTML;
+    
+    // 高亮当前事件
+    function highlightCurrentEvent() {
+      const events = document.querySelectorAll('.timeline-event');
+      const timelineContainer = document.querySelector('.timeline-container');
+      const indicatorPosition = timelineContainer.offsetWidth / 2;
+      
+      let activeFound = false;
+      
+      events.forEach(event => {
+        const rect = event.getBoundingClientRect();
+        const containerRect = timelineContainer.getBoundingClientRect();
+        const eventPosition = rect.left - containerRect.left + rect.width / 2;
+        
+        // 检查事件中心是否在指示线附近
+        if (!activeFound && Math.abs(eventPosition - indicatorPosition) < 30) {
+          event.classList.add('active');
+          activeFound = true;
+        } else {
+          event.classList.remove('active');
+        }
+      });
+      
+      // 更新进度条
+      const progress = document.getElementById('timelineProgress');
+      const scrollPercentage = (timelineTrack.offsetLeft * -1) / (timelineTrack.scrollWidth / 2) * 100;
+      progress.style.width = `${Math.min(100, scrollPercentage)}%`;
+    }
+    
+    // 初始高亮
+    highlightCurrentEvent();
+    
+    // 设置动画监听
+    timelineTrack.addEventListener('animationiteration', () => {
+      // 重置位置以实现无缝滚动
+      timelineTrack.style.animation = 'none';
+      setTimeout(() => {
+        timelineTrack.style.animation = '';
+        highlightCurrentEvent();
+      }, 10);
+    });
+    
+    // 每100ms检查一次高亮
+    setInterval(highlightCurrentEvent, 100);
+    
+    // 确保动画持续运行
+    timelineTrack.addEventListener('animationend', () => {
+      // 动画结束后立即重新开始
+      timelineTrack.style.animation = 'none';
+      setTimeout(() => {
+        timelineTrack.style.animation = 'scrollTimeline 60s linear infinite';
+        highlightCurrentEvent();
+      }, 10);
+    });
+    
+    // 强制重新启动动画，确保循环播放
+    function restartTimelineAnimation() {
+      timelineTrack.style.animation = 'none';
+      timelineTrack.offsetHeight; // 触发重排
+      timelineTrack.style.animation = 'scrollTimeline 60s linear infinite';
+    }
+    
+    // 每60秒强制重启动画，确保无缝循环
+    setInterval(restartTimelineAnimation, 60000);
+  </script>
+  
+  <!-- 账号发布趋势脚本（双折线图） -->
+  <script>
+    (function(){
+      const dates = ['06-14','06-15','06-16','06-18','06-20','06-22','06-24','06-26','06-28'];
+      const accountCount = [120,135,128,145,160,152,168,175,180]; // 账号数量
+      const accountTotal = [850,885,913,958,1018,1070,1138,1213,1293]; // 账号总量
+      const orange = '#F6AB00';
+      const color1 = '#FFA726'; // 账号数量颜色
+      const color2 = '#96897b'; // 账号总量颜色
+      
+      let currentIndex = -1;
+      const accountChart = echarts.init(document.getElementById('account-trend-chart'));
+      const option = {
+        grid:{ left:'12%', right:17, top:30, bottom:28 },
+        legend: {
+          data: ['账号数量', '账号总量'],
+          top: 0,
+          left: 'center',
+          textStyle: {
+            color: '#808080',
+            fontSize: 10
+          },
+          itemWidth: 12,
+          itemHeight: 8,
+          itemGap: 20,
+          icon: 'rect',
+          itemStyle: {
+            color: function(params) {
+              // 根据图例项名称返回对应的颜色
+              if (params.name === '账号数量') {
+                return color1; // #FFA726
+              } else if (params.name === '账号总量') {
+                return color2; // #96897b
+              }
+              return '#808080'; // 默认颜色
+            }
+          }
+        },
+        xAxis:{
+          type:'category', data:dates,
+          axisTick:{show:false},
+          axisLine:{lineStyle:{color:'#E0E0E0'}},
+          axisLabel:{color:'#808080',fontSize:10}
+        },
+        yAxis:{
+          type:'value', splitNumber:5,
+          axisLine:{show:false}, axisTick:{show:false},
+          axisLabel:{color:'#808080',fontSize:10},
+          splitLine:{show:true,lineStyle:{type:'dashed',color:'#D5D5D5'}},
+          name: '单位:个',
+          nameTextStyle: { 
+            color: '#808080', 
+            fontSize: 10,
+            padding: [0, 0, 0, -40] ,// 上 右 下 左，左侧加5px即可右移
+          }
+        },
+        tooltip:{
+          trigger:'axis', 
+          axisPointer:{type:'line',lineStyle:{color:orange,width:1.5}},
+          backgroundColor:'rgba(255,255,255,0.80)', 
+          borderColor:orange, 
+          borderWidth:1,
+          extraCssText:'border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,0.1);',
+          textStyle:{color:orange,fontSize:12,fontWeight:600},
+          formatter: p => {
+            const d1 = p[0];
+            const d2 = p[1];
+            return `
+              <div style="padding:2px 4px 2px;">
+                <div style="font-size:12px;font-weight:600;">${d1.axisValue}</div>
+                <div style="display:flex;align-items:center;margin-top:2px;">
+                  <span style="width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px;background:${color1};"></span>
+                  <span style="font-size:12px;">账号数量: ${d1.data}</span>
+                </div>
+                <div style="display:flex;align-items:center;margin-top:2px;">
+                  <span style="width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px;background:${color2};"></span>
+                  <span style="font-size:12px;color:${color2};">账号总量: ${d2.data}</span>
+                </div>
+              </div>`;
+          },
+          confine: true
+        },
+        series:[
+          {
+            name: '账号数量',
+            type:'line', 
+            data:accountCount, 
+            symbol:'circle', 
+            symbolSize:10,
+            lineStyle:{width:3,color:color1},
+            itemStyle:{ 
+              borderColor:color1,
+              borderWidth:2, 
+              color: p => (p.dataIndex===currentIndex ? color1 : '#FFE0B2') 
+            },
+            emphasis:{ itemStyle:{ borderWidth:4 } }
+          },
+          {
+            name: '账号总量',
+            type:'line', 
+            data:accountTotal, 
+            symbol:'circle', 
+            symbolSize:10,
+            lineStyle:{width:3,color:color2},
+            itemStyle:{ 
+              borderColor:color2,
+              borderWidth:2, 
+              color: p => (p.dataIndex===currentIndex ? color2 : '#D7CCC8') 
+            },
+            emphasis:{ itemStyle:{ borderWidth:4 } }
+          }
+        ]
+      };
+      accountChart.setOption(option);
+      
+      function cycle(){
+        const len = dates.length;
+        // 取消之前的高亮
+        accountChart.dispatchAction({type:'downplay',seriesIndex:0,dataIndex:currentIndex});
+        accountChart.dispatchAction({type:'downplay',seriesIndex:1,dataIndex:currentIndex});
+        
+        currentIndex = (currentIndex+1)%len;
+        
+        // 高亮当前数据点
+        accountChart.dispatchAction({type:'highlight',seriesIndex:0,dataIndex:currentIndex});
+        accountChart.dispatchAction({type:'highlight',seriesIndex:1,dataIndex:currentIndex});
+        
+        // 显示提示框
+        accountChart.dispatchAction({type:'showTip', seriesIndex:0,dataIndex:currentIndex});
+      }
+      cycle();
+      setInterval(cycle,2500);
+      window.addEventListener('resize',()=>accountChart.resize());
+    })();
+  </script>
+  
+  <!-- 扩散渠道轮播脚本 -->
+  <script>
+    (function(){
+      const diffusionChart = echarts.init(document.getElementById('diffusion-chart'));
+      const titleElement = document.getElementById('diffusion-title');
+      
+      // 三个数据图的配置
+      const chartConfigs = [
+        {
+          title: '扩散渠道分布',
+          type: 'bar-line',
+          data: {
+            platforms: ['微信', '客户端', '论坛', '网站', '微博', '数字报', '视频'],
+            postVolume: [95, 80, 30, 25, 15, 15, 0],
+            proportion: [40, 95, 70, 85, 55, 45, 80]
+          }
+        },
+        {
+          title: '扩散平台分布',
+          type: 'bar',
+          data: {
+            platforms: ['搜狐号', '新浪微博', '微信', '百家号', '懂车帝', '网易号', '网易新闻', '小红书', '今日头条', '有驾'],
+            values: [1234, 1100, 920, 740, 690, 670, 610, 550, 520, 490]
+          }
+        },
+        {
+          title: '首发速度',
+          type: 'horizontal-bar',
+          data: {
+            platforms: ['报刊', '论坛', '微信', '视频', '网站', '客户端', '微博'],
+            timeDiff: [135, 105, 90, 50, 35, 15, 0],
+            timestamps: ['2025-05-17 11:00', '2025-05-17 10:30', '2025-05-17 10:15', '2025-05-17 09:35', '2025-05-17 09:20', '2025-05-17 09:00', '2025-05-17 08:45']
+          }
+        }
+      ];
+      
+      let currentChartIndex = 0;
+      
+      function createBarLineChart(config) {
+        const option = {
+          grid: { left: '10%', right: '10%', top: '20%', bottom: '15%' },
+          legend: {
+            data: ['发文量', '占比'],
+            top: -5,
+            textStyle: { color: '#808080', fontSize: 10 },
+            itemWidth: 10,
+            itemHeight: 8,
+            itemGap: 20
+          },
+          xAxis: {
+            type: 'category',
+            data: config.data.platforms,
+            axisTick: { show: false },
+            axisLine: { lineStyle: { color: '#E0E0E0' } },
+            axisLabel: { color: '#808080', fontSize: 10 }
+          },
+          yAxis: [
+            {
+              type: 'value',
+              name: '单位:条',
+              nameTextStyle: { 
+                color: '#808080', 
+                fontSize: 10,
+                padding: [0, 0, 0, -20], // 上 右 下 左，左侧加5px即可右移
+              },
+              axisLine: { show: false },
+              axisTick: { show: false },
+              axisLabel: { color: '#808080', fontSize: 10 },
+              splitLine: { show: true, lineStyle: { type: 'dashed', color: '#D5D5D5' } }
+            },
+            {
+              type: 'value',
+              name: '%',
+              nameTextStyle: { 
+                color: '#808080', 
+                fontSize: 10,
+                padding: [0, -40, 0, 0] // 上 右 下 左，左侧加5px即可右移
+              },
+              axisLine: { show: false },
+              axisTick: { show: false },
+              axisLabel: { color: '#808080', fontSize: 10 },
+              splitLine: { show: false },
+              max: 100
+            }
+          ],
+          tooltip: {
+            trigger: 'axis',
+            backgroundColor: 'rgba(255,255,255,0.80)',
+            borderColor: '#F6AB00',
+            borderWidth: 1,
+            textStyle: { color: '#F6AB00', fontSize: 14, fontWeight: 600 },
+            confine: true
+          },
+          series: [
+            {
+              name: '发文量',
+              type: 'bar',
+              barWidth: '50%', // 设置柱子宽度为20px
+              data: config.data.postVolume,
+              itemStyle: { 
+                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                  { offset: 0, color: '#F6AB00' },
+                  { offset: 1, color: '#FFCE48' }
+                ]),
+                borderRadius: [10, 10, 0, 0] // 左上角、右上角、右下角、左下角
+              },
+              label: {
+                show: true,
+                position: 'top',
+                color: '#F6AB00',
+                fontSize: 12,
+                formatter: (p) => {
+            const maxPost = Math.max(...config.data.postVolume);
+            return p.value === maxPost ? p.value : '';
+          },
+              }
+            },
+            {
+              name: '占比',
+              type: 'line',
+              yAxisIndex: 1,
+              data: config.data.proportion,
+              symbol: 'circle',
+              symbolSize: 8,
+              lineStyle: { color: '#96897b', width: 2 },
+              itemStyle: { color: '#96897b' },
+              label: {
+                show: true,
+                position: 'top',
+                color: '#96897b',
+                fontSize: 12,
+                formatter: (p) => {
+            const maxProp = Math.max(...config.data.proportion);
+            return p.value === maxProp ? p.value + '%' : '';
+          },
+              }
+            }
+          ]
+        };
+        return option;
+      }
+      
+      function createBarChart(config) {
+        const option = {
+          grid: { left: '13%', right: '5%', top: '20%', bottom: '29%' },
+          xAxis: {
+            type: 'category',
+            data: config.data.platforms,
+            axisTick: { show: false },
+            axisLine: { lineStyle: { color: '#E0E0E0' } },
+            axisLabel: { color: '#808080', fontSize: 10, interval: 0, rotate: 45 }
+          },
+          yAxis: {
+            type: 'value',
+            name: '单位:条',
+            nameTextStyle: { 
+              color: '#808080', 
+              fontSize: 10,
+              padding: [0, 0, 0, -40], // 上 右 下 左，左侧加5px即可右移
+            },
+            axisLine: { show: false },
+            axisTick: { show: false },
+            axisLabel: { color: '#808080', fontSize: 10 },
+            splitLine: { show: true, lineStyle: { type: 'dashed', color: '#D5D5D5' } }
+          },
+          tooltip: {
+            trigger: 'axis',
+            backgroundColor: 'rgba(255,255,255,0.80)',
+            borderColor: '#F6AB00',
+            borderWidth: 1,
+            textStyle: { color: '#F6AB00', fontSize: 14, fontWeight: 600 },
+            confine: true
+          },
+          series: [
+            {
+              type: 'bar',
+              barWidth: '50%', // 设置柱子宽度为20px
+              data: config.data.values,
+              itemStyle: { 
+                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                  { offset: 0, color: '#F6AB00' },
+                  { offset: 1, color: '#FFCE48' }
+                ]),
+                borderRadius: [10, 10, 0, 0] // 左上角、右上角、右下角、左下角
+              },
+              label: {
+                show: true,
+                position: 'top',
+                color: '#F6AB00',
+                fontSize: 12
+              }
+            }
+          ]
+        };
+        return option;
+      }
+      
+      function createHorizontalBarChart(config) {
+        const option = {
+          grid: { left: '13%', right: '7%', top: '2%', bottom: '15%' },
+          xAxis: {
+            type: 'value',
+            name: '时间差 (分钟)',
+            nameTextStyle: {
+            color: '#808080', 
+            fontSize: 10,
+            padding: [0, 0, 0, -60], // 上 右 下 左，左侧加5px即可右移
+          },
+            axisLine: { lineStyle: { color: '#E0E0E0' } },
+            axisTick: { show: false },
+            axisLabel: { color: '#808080', fontSize: 10 },
+            splitLine: { show: true, lineStyle: { type: 'dashed', color: '#D5D5D5' } },
+            max: 150
+          },
+          yAxis: {
+            type: 'category',
+            data: config.data.platforms,
+            inverse: false,
+            axisTick: { show: false },
+            axisLine: { lineStyle: { color: '#E0E0E0' } },
+            axisLabel: { color: '#808080', fontSize: 10 }
+          },
+          tooltip: {
+            trigger: 'axis',
+            backgroundColor: 'rgba(255,255,255,0.80)',
+            borderColor: '#F6AB00',
+            borderWidth: 1,
+            textStyle: { color: '#F6AB00', fontSize: 14, fontWeight: 600 },
+            formatter: function(params) {
+              const dataIndex = params[0].dataIndex;
+              return `
+                <div style="padding: 4px;">
+                  <div style="font-size: 14px; font-weight: 600;">${config.data.platforms[dataIndex]}</div>
+                  <div style="margin-top: 4px;">时间差: ${config.data.timeDiff[dataIndex]} 分钟</div>
+                  <div style="margin-top: 2px; color: #666;">${config.data.timestamps[dataIndex]}</div>
+                </div>`;
+            },
+            confine: true
+          },
+          series: [
+            {
+              type: 'bar',
+              barWidth: '50%', // 设置柱子宽度为20px
+              data: config.data.timeDiff,
+              itemStyle: { 
+                color: new echarts.graphic.LinearGradient(1, 0, 0, 0, [
+                  { offset: 0, color: '#F6AB00' },
+                  { offset: 1, color: '#FFCE48' }
+                ]),
+                borderRadius: [0, 10, 10, 0] // 左上角、右上角、左下角、右下角
+              },
+              label: {
+                show: true,
+                position: 'right',
+                color: '#F6AB00',
+                fontSize: 12
+              }
+            }
+          ]
+        };
+        return option;
+      }
+      
+      function updateChart() {
+        const config = chartConfigs[currentChartIndex];
+        titleElement.textContent = config.title;
+        
+        let option;
+        switch(config.type) {
+          case 'bar-line':
+            option = createBarLineChart(config);
+            break;
+          case 'bar':
+            option = createBarChart(config);
+            break;
+          case 'horizontal-bar':
+            option = createHorizontalBarChart(config);
+            break;
+        }
+        
+        diffusionChart.setOption(option, true);
+      }
+      
+      function cycleChart() {
+        currentChartIndex = (currentChartIndex + 1) % chartConfigs.length;
+        updateChart();
+      }
+      
+      // 初始化第一个图表
+      updateChart();
+      
+      // 每5秒切换一次图表
+      setInterval(cycleChart, 5000);
+      
+      // 响应窗口大小变化
+      window.addEventListener('resize', () => diffusionChart.resize());
+    })();
+  </script>
+  
+  <!-- 高频词轮播脚本 -->
+  <script>
+    (function(){
+      const keywordChart = echarts.init(document.getElementById('keyword-chart'));
+      const titleElement = document.getElementById('keyword-title');
+      
+      // 三个数据图的配置
+      const keywordConfigs = [
+        {
+          title: '高频词·全量',
+          type: 'wordcloud',
+          data: [
+            { name: '选择题', value: 100 },
+            { name: '答案题目', value: 90 },
+            { name: '解析单项', value: 85 },
+            { name: '详解', value: 80 },
+            { name: '我们', value: 75 },
+            { name: '自己', value: 70 },
+            { name: '本题', value: 65 },
+            { name: '老鼠', value: 60 },
+            { name: '提高', value: 55 },
+            { name: '获得', value: 50 },
+            { name: '科学', value: 45 },
+            { name: '经济', value: 40 },
+            { name: '但是', value: 35 },
+            { name: '直接', value: 30 },
+            { name: '考试', value: 25 },
+            { name: '品牌', value: 20 },
+            { name: '火锅店', value: 15 },
+            { name: '大家', value: 10 },
+            { name: '店家', value: 8 },
+            { name: '对应', value: 6 },
+            { name: '物业', value: 4 },
+            { name: '必须', value: 3 },
+            { name: '春游', value: 2 },
+            { name: '发展', value: 1 }
+          ]
+        },
+        {
+          title: '高频词·负面',
+          type: 'wordcloud',
+          data: [
+            { name: '老鼠', value: 100 },
+            { name: '自助', value: 90 },
+            { name: '火锅店', value: 85 },
+            { name: '北京', value: 80 },
+            { name: '商场', value: 75 },
+            { name: '食品安全', value: 70 },
+            { name: '餐饮卫生', value: 65 },
+            { name: '舆情', value: 60 },
+            { name: '发现', value: 55 },
+            { name: '新闻', value: 50 },
+            { name: '回应', value: 45 },
+            { name: '调查', value: 40 },
+            { name: '消毒', value: 35 },
+            { name: '漏洞', value: 30 },
+            { name: '恶心', value: 25 },
+            { name: '关闭', value: 20 },
+            { name: '清理', value: 15 },
+            { name: '加强', value: 10 },
+            { name: '关注', value: 8 },
+            { name: '配合', value: 6 },
+            { name: '顾客', value: 4 },
+            { name: '商家', value: 3 },
+            { name: '老板', value: 2 },
+            { name: '消费者', value: 1 }
+          ]
+        }
+      ];
+      
+      let currentKeywordIndex = 0;
+      
+      function createWordCloudChart(config) {
+        const option = {
+          series: [
+            {
+              type: 'wordCloud',
+              shape: 'circle',
+              left: 'center',
+              top: 'center',
+              width: '90%',
+              height: '90%',
+              sizeRange: [10, 60],
+              rotationRange: [-90, 90],
+              rotationStep: 45,
+              gridSize: 2,
+              drawOutOfBound: false,
+              textStyle: {
+                fontFamily: 'sans-serif',
+                fontWeight: 'bold',
+                color: config.title === '高频词·负面' ? '#F6AB00' : 
+                       config.title === '高频词·全量' ? function () {
+                         const colors = ['#F6AB00', '#FF4800', '#B9B4B1'];
+                         return colors[Math.floor(Math.random() * colors.length)];
+                       } : function () {
+                         return 'rgb(' + [
+                           Math.round(Math.random() * 160),
+                           Math.round(Math.random() * 160),
+                           Math.round(Math.random() * 160)
+                         ].join(',') + ')';
+                       }
+              },
+              emphasis: {
+                focus: 'self',
+                textStyle: {
+                  shadowBlur: 10,
+                  shadowColor: '#333'
+                }
+              },
+              data: config.data
+            }
+          ]
+        };
+        return option;
+      }
+      
+
+      
+      function updateKeywordChart() {
+        const config = keywordConfigs[currentKeywordIndex];
+        titleElement.textContent = config.title;
+        
+        let option;
+        switch(config.type) {
+          case 'wordcloud':
+            option = createWordCloudChart(config);
+            break;
+        }
+        
+        keywordChart.setOption(option, true);
+      }
+      
+      function cycleKeywordChart() {
+        currentKeywordIndex = (currentKeywordIndex + 1) % keywordConfigs.length;
+        updateKeywordChart();
+      }
+      
+      // 初始化第一个图表
+      updateKeywordChart();
+      
+      // 每5秒切换一次图表
+      setInterval(cycleKeywordChart, 5000);
+      
+      // 响应窗口大小变化
+      window.addEventListener('resize', () => keywordChart.resize());
+    })();
+  </script>
+  
+  <!-- 高热信息模块脚本 -->
+  <script>
+    // 自动轮播功能
+    (function(){
+      // 等待DOM加载完成
+      document.addEventListener('DOMContentLoaded', function() {
+        var wrap = document.getElementById('hot-module');
+        if (!wrap) {
+          console.error('未找到高热信息模块容器');
+          return;
+        }
+        
+        var tabs = wrap.querySelectorAll('.hot-tabs .btn');
+        var panes = ['#tab-interact','#tab-comment','#tab-spread','#tab-fans'];
+        var idx = 0, timer=null, interval=12000;
+
+        console.log('找到标签页数量:', tabs.length);
+        console.log('找到面板数量:', panes.length);
+
+        function showPane(i){
+          idx = (i+panes.length)%panes.length;
+          console.log('切换到标签页:', idx, '面板:', panes[idx]);
+          
+          // 更新标签页状态
+          tabs.forEach(function(tab, k){
+            if(k===idx){ 
+              tab.classList.add('active'); 
+            } else { 
+              tab.classList.remove('active'); 
+            }
+          });
+          
+          // 更新内容面板
+          panes.forEach(function(sel, k){
+            var pane = document.querySelector(sel);
+            if(pane){
+              if(k===idx){ 
+                pane.classList.add('show'); 
+                pane.style.display = 'block'; 
+                pane.style.opacity = '1';
+                console.log('显示面板:', sel);
+                
+                // 如果是高扩散标签页，初始化关系图
+                if(sel === '#tab-spread'){
+                  setTimeout(function() {
+                    initSpreadRelationChart();
+                  }, 200);
+                }
+              } else { 
+                pane.classList.remove('show'); 
+                pane.style.display = 'none'; 
+                pane.style.opacity = '0';
+                console.log('隐藏面板:', sel);
+              }
+            } else {
+              console.error('未找到面板:', sel);
+            }
+          });
+        }
+        
+        function start(){ 
+          console.log('开始自动轮播');
+          stop(); 
+          timer=setInterval(function(){ 
+            console.log('自动切换到下一个标签页');
+            showPane(idx+1); 
+          }, interval); 
+        }
+        
+        function stop(){ 
+          if(timer){ 
+            console.log('停止自动轮播');
+            clearInterval(timer); 
+            timer=null; 
+          } 
+        }
+
+        // 为每个标签页添加点击事件
+        tabs.forEach(function(tab, index){
+          tab.addEventListener('click', function(){
+            console.log('手动点击标签页:', index);
+            showPane(index); 
+            start(); 
+            
+            // 如果点击的是高扩散标签页，初始化关系图
+            if(index === 2){ // 高扩散是第3个标签页（索引为2）
+              setTimeout(function() {
+                initSpreadRelationChart();
+              }, 200);
+            }
+          });
+        });
+        
+        // 鼠标悬停暂停，离开继续
+        wrap.addEventListener('mouseenter', stop);
+        wrap.addEventListener('mouseleave', start);
+
+        // 初始化显示第一个标签页并开始轮播
+        showPane(0); 
+        start();
+        
+        console.log('高热信息模块自动轮播已启动，轮播间隔:', interval, 'ms');
+        
+        // 添加轮播状态指示器
+        var statusIndicator = document.createElement('div');
+        statusIndicator.style.cssText = 'position:absolute;top:5px;right:5px;width:8px;height:8px;background:#F6AB00;border-radius:50%;animation:pulse 1s infinite;';
+        statusIndicator.title = '自动轮播运行中';
+        wrap.style.position = 'relative';
+        wrap.appendChild(statusIndicator);
+        
+        // 添加脉冲动画
+        var style = document.createElement('style');
+        style.textContent = '@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }';
+        document.head.appendChild(style);
+        
+        // 测试轮播功能
+        setTimeout(function() {
+          console.log('测试轮播功能 - 3秒后切换到下一个标签页');
+          showPane(1);
+        }, 3000);
+      });
+    })();
+    
+
+  </script>
+  
+  <!-- 新增主要信息模块脚本 -->
+  <script>
+    (function() {
+      // 新增主要信息数据
+      const newInfoData = [
+        {
+          title: "抖音-长治市超凡有害生物防治有限公司",
+          content: "目前国内尚无统一的成品检测标准不同机构因方法差异得出的结果可能天差地别",
+          mentions: "@抖音小助手 @抖音创作小助手"
+        },
+        {
+          title: "微博-食品安全监督局",
+          content: "已对涉事火锅店进行全面检查，发现多项卫生问题，责令立即整改。要求商家加强食品安全管理，确保消费者用餐安全。",
+          mentions: "@食品安全监督局 @消费者权益保护"
+        },
+        {
+          title: "微信-消费者权益保护协会",
+          content: "呼吁消费者在餐饮消费时注意食品安全，发现问题及时举报。我们将持续关注此事进展，维护消费者合法权益。",
+          mentions: "@消费者权益保护协会 @食品安全"
+        },
+        {
+          title: "央视新闻-官方通报",
+          content: "相关部门已介入调查，将依法依规处理涉事商家，保障消费者权益。同时提醒广大消费者提高食品安全意识。",
+          mentions: "@央视新闻 @官方通报"
+        },
+        {
+          title: "界面新闻-深度报道",
+          content: "火锅店异物事件引发公众对餐饮卫生安全的广泛关注和讨论。专家表示，此类事件频发暴露了餐饮行业监管漏洞。",
+          mentions: "@界面新闻 @深度报道"
+        }
+      ];
+      
+      // 获取DOM元素
+      const popupOverlay = document.getElementById('popupOverlay');
+      const popupTitle = document.getElementById('popupTitle');
+      const popupContent = document.getElementById('popupContent');
+      const popupMentions = document.getElementById('popupMentions');
+      const popupNewBadge = document.querySelector('.popup-new-badge');
+      const newInfoContainer = document.getElementById('newInfoContainer');
+      
+      // 显示弹出框
+      function showPopup(data, isNew = false) {
+        popupTitle.textContent = data.title;
+        popupContent.textContent = data.content;
+        popupMentions.textContent = data.mentions;
+        
+        // 控制"最新添加"标注的显示
+        if (popupNewBadge) {
+          popupNewBadge.style.display = isNew ? 'block' : 'none';
+        }
+        
+        popupOverlay.classList.add('show');
+        
+        // 10秒后自动隐藏
+        setTimeout(() => {
+          hidePopup();
+        }, 10000);
+      }
+      
+      // 隐藏弹出框
+      function hidePopup() {
+        popupOverlay.classList.remove('show');
+      }
+      
+
+      
+      // 为信息卡片添加点击事件
+      function addCardClickEvents() {
+        const cards = document.querySelectorAll('.new-info-card');
+        cards.forEach((card, index) => {
+          card.addEventListener('click', () => {
+            // 获取卡片的数据
+            const title = card.querySelector('.new-info-title').textContent;
+            const content = card.querySelector('.new-info-text').textContent;
+            
+            // 查找对应的数据
+            const data = newInfoData.find(item => item.title === title) || {
+              title: title,
+              content: content,
+              mentions: "@相关信息"
+            };
+            
+            showPopup(data, false); // 现有卡片不显示"最新添加"标注
+          });
+        });
+      }
+      
+      // 定时弹窗系统
+      let popupTimer = null;
+      let currentPopupIndex = 0;
+      let hasNewData = false;
+      
+      // 定时弹窗函数 - 每5分钟按顺序显示列表信息
+      function startScheduledPopups() {
+        // 清除之前的定时器
+        if (popupTimer) {
+          clearInterval(popupTimer);
+        }
+        
+        // 每5分钟（300000毫秒）执行一次
+        popupTimer = setInterval(() => {
+          // 按列表顺序显示信息
+          const dataIndex = currentPopupIndex % newInfoData.length;
+          const data = newInfoData[dataIndex];
+          
+          // 显示弹出框
+          showPopup(data, false);
+          
+          // 更新索引，准备下次显示
+          currentPopupIndex++;
+          
+        }, 300000); // 5分钟 = 300000毫秒
+      }
+      
+      // 显示最新更新信息的函数
+      function showNewDataPopup(newData) {
+        // 标记有新数据
+        hasNewData = true;
+        
+        // 显示最新信息的弹出框
+        showPopup(newData, true);
+        
+        // 12秒后自动隐藏
+        setTimeout(() => {
+          hidePopup();
+          // 重置标记
+          hasNewData = false;
+        }, 12000);
+      }
+      
+      // 修改后的showPopup函数，支持渐隐效果
+      function showPopup(data, isNew = false) {
+        popupTitle.textContent = data.title;
+        popupContent.textContent = data.content;
+        popupMentions.textContent = data.mentions;
+        
+        // 控制"最新添加"标注的显示
+        if (popupNewBadge) {
+          popupNewBadge.style.display = isNew ? 'block' : 'none';
+        }
+        
+        // 显示弹出框
+        popupOverlay.classList.add('show');
+        
+        // 12秒后自动隐藏（渐隐效果）
+        setTimeout(() => {
+          hidePopup();
+        }, 12000);
+      }
+      
+      // 修改后的hidePopup函数，添加渐隐效果
+      function hidePopup() {
+        popupOverlay.classList.remove('show');
+        popupOverlay.classList.add('hiding');
+        
+        // 渐隐动画完成后移除hiding类
+        setTimeout(() => {
+          popupOverlay.classList.remove('hiding');
+        }, 300);
+      }
+      
+      // 模拟数据更新 - 创建新卡片但不自动弹窗
+      function simulateDataUpdate() {
+        setTimeout(() => {
+          // 随机选择一个信息显示
+          const randomIndex = Math.floor(Math.random() * newInfoData.length);
+          const randomData = newInfoData[randomIndex];
+          
+          // 创建新的信息卡片
+          const newCard = document.createElement('div');
+          newCard.className = 'new-info-card';
+          newCard.setAttribute('data-index', '0');
+          newCard.innerHTML = `
+            <div class="new-info-number">1</div>
+            <div class="new-info-content">
+              <div class="new-info-title">${randomData.title}</div>
+              <div class="new-info-text">${randomData.content}</div>
+            </div>
+          `;
+          
+          // 获取现有的卡片
+          const existingCards = newInfoContainer.querySelectorAll('.new-info-card');
+          
+          // 如果已经有3条信息，删除最后一条（最旧的）
+          if (existingCards.length >= 3) {
+            newInfoContainer.removeChild(existingCards[existingCards.length - 1]);
+          }
+          
+          // 将新卡片添加到顶部
+          newInfoContainer.insertBefore(newCard, newInfoContainer.firstChild);
+          
+          // 更新所有卡片的序号
+          const allCards = newInfoContainer.querySelectorAll('.new-info-card');
+          allCards.forEach((card, index) => {
+            // 更新序号
+            const numberElement = card.querySelector('.new-info-number');
+            if (numberElement) {
+              numberElement.textContent = index + 1;
+            }
+            
+            // 更新data-index
+            card.setAttribute('data-index', index);
+          });
+          
+          // 为新卡片添加点击事件
+          newCard.addEventListener('click', () => {
+            showPopup(randomData, false);
+          });
+          
+          // 显示最新更新信息的弹出框
+          showNewDataPopup(randomData);
+          
+        }, 2000);
+      }
+      
+      // 初始化
+      document.addEventListener('DOMContentLoaded', function() {
+        addCardClickEvents();
+        simulateDataUpdate();
+        
+        // 启动定时弹窗系统
+        startScheduledPopups();
+        
+        // 点击弹出框背景关闭
+        popupOverlay.addEventListener('click', (e) => {
+          if (e.target === popupOverlay) {
+            hidePopup();
+          }
+        });
+      });
+    })();
+  </script>
+  
+  <!-- 高扩散关系图脚本 -->
+  <script>
+    // 高扩散关系图数据
+    const spreadNodes = [
+      { id:'root', name:'原发媒体｜北京日报客户端', level:0, order:1, root:true },
+      { id:'social',   name:'社交平台',     level:1, order:1 },
+      { id:'portal',   name:'门户媒体转载', level:1, order:2 },
+      { id:'industry', name:'行业媒体转载', level:1, order:3 },
+      { id:'wb_hotnews', name:'微博｜@头条新闻',     level:2, order:1, parent:'social' },
+      { id:'wb_bjhot',   name:'微博｜@北京热点榜',   level:2, order:2, parent:'social' },
+      { id:'dy_city',    name:'抖音｜@城市热点',     level:2, order:3, parent:'social' },
+      { id:'zh_food',    name:'知乎｜话题·食品安全', level:2, order:4, parent:'social' },
+      { id:'xhs_store',  name:'小红书｜@城市探店',   level:2, order:5, parent:'social' }
+    ];
+
+    const spreadLinks = [
+      { source:'root', target:'social'   },
+      { source:'root', target:'portal'   },
+      { source:'root', target:'industry' },
+      { source:'social', target:'wb_hotnews' },
+      { source:'social', target:'wb_bjhot'   },
+      { source:'social', target:'dy_city'    },
+      { source:'social', target:'zh_food'    },
+      { source:'social', target:'xhs_store'  }
+    ];
+
+    const spreadTitles = [
+      '求顾客心理阴影面积[苦涩]#北京一火锅店惊现老鼠吃自助##多方回应自助火锅店惊现老鼠#',
+      '网传食品抽检结果曝光，监管部门最新回应',
+      '某品牌新品发布引争议：参数与实测差异',
+      '暴雨致城区积水，多部门连夜排涝保畅通',
+      '高校录取通知书设计刷屏，网友热议创意与仪式感'
+    ];
+
+    // 初始化高扩散关系图
+    function initSpreadRelationChart() {
+      console.log('开始初始化高扩散关系图...');
+      
+      const chartElement = document.getElementById('spread-relation-chart');
+      if (!chartElement) {
+        console.error('未找到spread-relation-chart元素');
+        return;
+      }
+      
+      console.log('找到图表容器元素:', chartElement);
+      
+      try {
+        // 清空容器
+        chartElement.innerHTML = '';
+        
+        // 创建SVG元素
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 1200 300');
+        svg.setAttribute('preserveAspectRatio', 'none');
+        chartElement.appendChild(svg);
+        
+        // 随机选择一个标题
+        const pickedTitle = spreadTitles[Math.floor(Math.random() * spreadTitles.length)];
+        
+        // 渲染关系图
+        function renderSpreadChart() {
+          const W = chartElement.clientWidth, H = chartElement.clientHeight;
+          svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+          
+          // 清空SVG内容
+          while (svg.firstChild) svg.removeChild(svg.firstChild);
+          
+          const levels = [...new Set(spreadNodes.map(n=>n.level))].sort((a,b)=>a-b);
+          const colGap = W / (levels.length + 1);
+          const xPos = lvl => (lvl+1) * colGap;
+          
+          const byLevel = lvl => spreadNodes.filter(n=>n.level===lvl).sort((a,b)=>a.order-b.order);
+          const yOf = (lvl, idx, count) => {
+            const top = 0.18 * H, bottom = 0.82 * H;
+            if (count===1) return H/2;
+            return top + (bottom-top) * (idx/(count-1));
+          };
+          
+          const pos = {};
+          levels.forEach(lvl=>{
+            const list = byLevel(lvl);
+            list.forEach((n, i)=>{
+              pos[n.id] = { x:xPos(lvl), y:yOf(lvl, i, list.length) };
+            });
+          });
+          
+          // 绘制连接线
+          spreadLinks.forEach((e, i)=>{
+            const s = pos[e.source], t = pos[e.target];
+            if (s && t) {
+              const dx = (t.x - s.x);
+              const c1 = { x: s.x + dx*0.45, y: s.y + (i%2? 18: -8) };
+              const c2 = { x: t.x - dx*0.45, y: t.y + (i%2? -12: 6)  };
+              const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+              path.setAttribute('d', `M ${s.x},${s.y} C ${c1.x},${c1.y} ${c2.x},${c2.y} ${t.x},${t.y}`);
+              path.setAttribute('class','edge');
+              svg.appendChild(path);
+            }
+          });
+          
+          // 绘制节点
+          spreadNodes.forEach(n=>{
+            const {x,y} = pos[n.id];
+            if (x !== undefined && y !== undefined) {
+              const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+              circle.setAttribute('cx', x);
+              circle.setAttribute('cy', y);
+              circle.setAttribute('r', 6.5);
+              circle.setAttribute('class','node');
+              circle.setAttribute('stroke', n.root ? '#FE8301' : '#F6AB01');
+              svg.appendChild(circle);
+              
+              const text = document.createElementNS('http://www.w3.org/2000/svg','text');
+              text.setAttribute('class','label');
+              const dx = 8;
+              
+              if (n.level===0){
+                // 绘制第一行：序号"1."和样例标题（居中对齐）
+                const titleLine1 = document.createElementNS('http://www.w3.org/2000/svg','text');
+                titleLine1.setAttribute('class','label-sub');
+                titleLine1.setAttribute('x', x);
+                titleLine1.setAttribute('y', y - 40);
+                titleLine1.setAttribute('text-anchor','middle');
+                titleLine1.setAttribute('fill', '#FE8301');
+                titleLine1.setAttribute('style', 'fill: #FE8301 !important;');
+                
+                // 限制标题长度，避免显示过长
+                const maxTitleLength = 25; // 最大显示字符数
+                let displayTitle = pickedTitle;
+                if (pickedTitle.length > maxTitleLength) {
+                  displayTitle = pickedTitle.substring(0, maxTitleLength) + '...';
+                }
+                
+                // 使用tspan来实现"1."的加粗效果
+                const tspan1 = document.createElementNS('http://www.w3.org/2000/svg','tspan');
+                tspan1.setAttribute('style', 'font-weight: bold; font-size: 12px;');
+                tspan1.textContent = '1.';
+                
+                const tspan2 = document.createElementNS('http://www.w3.org/2000/svg','tspan');
+                tspan2.textContent = '《样例标题：' + displayTitle + '》';
+                
+                titleLine1.appendChild(tspan1);
+                titleLine1.appendChild(tspan2);
+                svg.appendChild(titleLine1);
+                
+                // 绘制第二行：扩散数量（居中对齐）
+                const titleLine2 = document.createElementNS('http://www.w3.org/2000/svg','text');
+                titleLine2.setAttribute('class','label-sub');
+                titleLine2.setAttribute('x', x);
+                titleLine2.setAttribute('y', y - 25);
+                titleLine2.setAttribute('text-anchor','middle');
+                titleLine2.setAttribute('fill', '#FE8301');
+                titleLine2.setAttribute('style', 'fill: #FE8301 !important;');
+                titleLine2.textContent = '扩散数量：770';
+                svg.appendChild(titleLine2);
+                
+                // 再绘制原发媒体名称
+                text.setAttribute('x', x + dx + 2);
+                text.setAttribute('y', y - 8);
+                text.setAttribute('text-anchor','start');
+                text.textContent = n.name;
+                svg.appendChild(text);
+                return;
+              }
+              
+              if (n.level===1){
+                if (n.id==='social'){
+                  text.setAttribute('x', x - dx);
+                  text.setAttribute('y', y);
+                  text.setAttribute('text-anchor','end');
+                }else{
+                  text.setAttribute('x', x + dx + 2);
+                  text.setAttribute('y', y);
+                  text.setAttribute('text-anchor','start');
+                }
+              }else{
+                text.setAttribute('x', x + dx + 2);
+                text.setAttribute('y', y);
+                text.setAttribute('text-anchor','start');
+              }
+              text.textContent = n.name;
+              svg.appendChild(text);
+            }
+          });
+        }
+        
+        // 初始渲染
+        renderSpreadChart();
+        
+        // 响应窗口大小变化
+        window.addEventListener('resize', renderSpreadChart);
+        
+        console.log('高扩散关系图初始化成功');
+        
+      } catch (error) {
+        console.error('初始化高扩散关系图时出错:', error);
+      }
+    }
+    
+    // 页面加载完成后初始化关系图
+    document.addEventListener('DOMContentLoaded', function() {
+      // 延迟初始化，确保DOM完全加载
+      setTimeout(() => {
+        initSpreadRelationChart();
+      }, 100);
+    });
+  </script>
+  </body>
+  </html>
